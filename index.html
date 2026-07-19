@@ -142,7 +142,10 @@
     padding: 4.5rem 1.25rem 9rem;
   }
   body.desktop-mode main{
-    max-width:1040px;
+    max-width:none;
+    width:100%;
+    padding-left:3rem;
+    padding-right:3rem;
     position:relative;
   }
 
@@ -748,8 +751,8 @@
     if(!main || !windows.length) return;
 
     var defaultLayout = {
-      resume:  { left: 0,   top: 0, width: 460 },
-      links:   { left: 500, top: 0, width: 400 }
+      resume:  { left: 0,   top: 0, width: 620 },
+      links:   { left: 660, top: 0, width: 420 }
     };
 
     var desktopModeActive = false;
