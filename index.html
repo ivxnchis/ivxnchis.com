@@ -141,6 +141,10 @@
     margin:0 auto;
     padding: 4.5rem 1.25rem 9rem;
   }
+  body.desktop-mode main{
+    max-width:1040px;
+    position:relative;
+  }
 
   .hero{ text-align:center; margin-bottom: 3rem; }
   .avatar-ring{
@@ -171,8 +175,19 @@
     border-radius:14px;
     border:1px solid var(--dock-border);
     box-shadow: 0 30px 60px -20px rgba(30,30,50,0.28), 0 2px 8px rgba(30,30,50,0.06);
-    overflow:hidden;
+    overflow-x:hidden;
+    overflow-y:auto;
     margin-bottom: 2.6rem;
+  }
+  /* Desktop canvas mode: windows become free-floating, draggable, resizable */
+  body.desktop-mode .window{
+    position:absolute;
+    margin-bottom:0;
+    min-width:280px;
+    min-height:200px;
+  }
+  body.desktop-mode .window.dragging{
+    box-shadow: 0 42px 84px -20px rgba(20,20,40,0.4), 0 4px 12px rgba(20,20,40,0.12);
   }
   .window-header{
     display:flex;
@@ -182,6 +197,20 @@
     background:var(--window-header);
     border-bottom:1px solid var(--hair);
   }
+  body.desktop-mode .window-header{ cursor:grab; user-select:none; touch-action:none; }
+  body.desktop-mode .window.dragging .window-header{ cursor:grabbing; }
+  .resize-handle{
+    display:none;
+    position:absolute;
+    right:2px; bottom:2px;
+    width:16px; height:16px;
+    cursor:nwse-resize;
+    touch-action:none;
+    background: linear-gradient(135deg, transparent 50%, var(--ink-soft) 50%);
+    opacity:0.4;
+    border-bottom-right-radius:12px;
+  }
+  body.desktop-mode .resize-handle{ display:block; }
   .traffic{ display:flex; gap:8px; }
   .traffic span{ width:12px; height:12px; border-radius:50%; display:inline-block; }
   .traffic .r{ background:var(--red); }
@@ -602,6 +631,7 @@
         </div>
       </div>
     </div>
+    <div class="resize-handle" aria-hidden="true"></div>
   </section>
 
   <!-- Finder: Links -->
@@ -650,6 +680,7 @@
         <span class="finder-date">Message me</span>
       </a></li>
     </ul>
+    <div class="resize-handle" aria-hidden="true"></div>
   </section>
 
   <!-- Contact -->
@@ -665,6 +696,7 @@
         <dt>Status</dt><dd style="color:var(--green); font-weight:600;">● Open to opportunities</dd>
       </dl>
     </div>
+    <div class="resize-handle" aria-hidden="true"></div>
   </section>
 </main>
 
@@ -707,6 +739,160 @@
       if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); }
     });
   });
+
+  /* ---------------- Desktop windowing: drag, resize, side-by-side layout ---------------- */
+  (function(){
+    var BREAKPOINT = 900;
+    var main = document.querySelector('main');
+    var windows = Array.prototype.slice.call(document.querySelectorAll('main .window'));
+    if(!main || !windows.length) return;
+
+    var defaultLayout = {
+      resume:  { left: 0,   top: 0, width: 460 },
+      links:   { left: 500, top: 0, width: 400 }
+    };
+
+    var desktopModeActive = false;
+    var zCounter = 10;
+
+    function bringToFront(win){
+      zCounter++;
+      win.style.zIndex = zCounter;
+    }
+
+    function updateCanvasHeight(){
+      if(!desktopModeActive) return;
+      var maxBottom = 0;
+      windows.forEach(function(w){
+        var bottom = w.offsetTop + w.offsetHeight;
+        if(bottom > maxBottom) maxBottom = bottom;
+      });
+      main.style.minHeight = (maxBottom + 40) + 'px';
+    }
+
+    function layoutWindows(){
+      var resume = document.getElementById('resume');
+      var links = document.getElementById('links');
+      var contact = document.getElementById('contact');
+
+      windows.forEach(function(w, i){
+        var cfg = defaultLayout[w.id];
+        if(cfg){
+          w.style.left = cfg.left + 'px';
+          w.style.top = cfg.top + 'px';
+          w.style.width = cfg.width + 'px';
+        }
+        w.style.height = '';
+        bringToFront(w);
+      });
+
+      // place Contact below whichever of Resume/Links is taller, spanning both
+      requestAnimationFrame(function(){
+        if(contact && resume && links){
+          var bottom = Math.max(
+            resume.offsetTop + resume.offsetHeight,
+            links.offsetTop + links.offsetHeight
+          );
+          var span = (links.offsetLeft + links.offsetWidth) - resume.offsetLeft;
+          contact.style.left = resume.offsetLeft + 'px';
+          contact.style.top = (bottom + 28) + 'px';
+          contact.style.width = span + 'px';
+        }
+        updateCanvasHeight();
+      });
+    }
+
+    function clearLayout(){
+      windows.forEach(function(w){
+        w.style.left = w.style.top = w.style.width = w.style.height = w.style.zIndex = '';
+      });
+      main.style.minHeight = '';
+    }
+
+    function makeDraggable(win){
+      var header = win.querySelector('.window-header');
+      if(!header) return;
+      header.addEventListener('pointerdown', function(e){
+        if(!desktopModeActive) return;
+        e.preventDefault();
+        bringToFront(win);
+        win.classList.add('dragging');
+        var startX = e.clientX, startY = e.clientY;
+        var startLeft = win.offsetLeft, startTop = win.offsetTop;
+
+        function onMove(ev){
+          var dx = ev.clientX - startX, dy = ev.clientY - startY;
+          var maxLeft = main.clientWidth - win.offsetWidth;
+          var newLeft = Math.max(0, Math.min(startLeft + dx, Math.max(0, maxLeft)));
+          var newTop = Math.max(0, startTop + dy);
+          win.style.left = newLeft + 'px';
+          win.style.top = newTop + 'px';
+        }
+        function onUp(){
+          win.classList.remove('dragging');
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          updateCanvasHeight();
+        }
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+      });
+    }
+
+    function makeResizable(win){
+      var handle = win.querySelector('.resize-handle');
+      if(!handle) return;
+      handle.addEventListener('pointerdown', function(e){
+        if(!desktopModeActive) return;
+        e.preventDefault();
+        e.stopPropagation();
+        bringToFront(win);
+        var startX = e.clientX, startY = e.clientY;
+        var startW = win.offsetWidth, startH = win.offsetHeight;
+
+        function onMove(ev){
+          var newW = Math.max(280, startW + (ev.clientX - startX));
+          var newH = Math.max(200, startH + (ev.clientY - startY));
+          win.style.width = newW + 'px';
+          win.style.height = newH + 'px';
+        }
+        function onUp(){
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          updateCanvasHeight();
+        }
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+      });
+    }
+
+    windows.forEach(function(w){
+      w.addEventListener('pointerdown', function(){ if(desktopModeActive) bringToFront(w); });
+      makeDraggable(w);
+      makeResizable(w);
+    });
+
+    function syncMode(){
+      var shouldBeDesktop = window.innerWidth >= BREAKPOINT;
+      if(shouldBeDesktop && !desktopModeActive){
+        desktopModeActive = true;
+        document.body.classList.add('desktop-mode');
+        layoutWindows();
+      } else if(!shouldBeDesktop && desktopModeActive){
+        desktopModeActive = false;
+        document.body.classList.remove('desktop-mode');
+        clearLayout();
+      }
+    }
+
+    var resizeTimer;
+    window.addEventListener('resize', function(){
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(syncMode, 150);
+    });
+
+    syncMode();
+  })();
 
   var shareBtn = document.getElementById('shareBtn');
   if(shareBtn){
