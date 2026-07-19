@@ -288,7 +288,7 @@
     background:#fff;
     margin:1.5rem auto;
     width:calc(100% - 3rem);
-    max-width:640px;
+    max-width:820px;
     border-radius:6px;
     box-shadow:0 10px 26px rgba(0,0,0,0.12);
     padding: 2.1rem 1.9rem 2.4rem;
@@ -750,11 +750,6 @@
     var windows = Array.prototype.slice.call(document.querySelectorAll('main .window'));
     if(!main || !windows.length) return;
 
-    var defaultLayout = {
-      resume:  { left: 0,   top: 0, width: 620 },
-      links:   { left: 660, top: 0, width: 420 }
-    };
-
     var desktopModeActive = false;
     var zCounter = 10;
 
@@ -777,31 +772,41 @@
       var resume = document.getElementById('resume');
       var links = document.getElementById('links');
       var contact = document.getElementById('contact');
+      var hero = document.querySelector('.hero');
+      var menubar = document.querySelector('.menubar');
+      if(!resume || !links || !contact || !hero) return;
 
-      windows.forEach(function(w, i){
-        var cfg = defaultLayout[w.id];
-        if(cfg){
-          w.style.left = cfg.left + 'px';
-          w.style.top = cfg.top + 'px';
-          w.style.width = cfg.width + 'px';
-        }
-        w.style.height = '';
-        bringToFront(w);
-      });
+      // clear any explicit heights first so hero/measurements are clean
+      windows.forEach(function(w){ w.style.height = ''; });
 
-      // place Contact below whichever of Resume/Links is taller, spanning both
       requestAnimationFrame(function(){
-        if(contact && resume && links){
-          var bottom = Math.max(
-            resume.offsetTop + resume.offsetHeight,
-            links.offsetTop + links.offsetHeight
-          );
-          var span = (links.offsetLeft + links.offsetWidth) - resume.offsetLeft;
-          contact.style.left = resume.offsetLeft + 'px';
-          contact.style.top = (bottom + 28) + 'px';
-          contact.style.width = span + 'px';
-        }
-        updateCanvasHeight();
+        var menubarH = menubar ? menubar.offsetHeight : 0;
+        var topY = hero.offsetTop + hero.offsetHeight + 28; // clear the name/hero block
+        var dockClearance = 120; // room for the dock at the bottom of the screen
+        var availableH = Math.max(420, window.innerHeight - menubarH - topY - dockClearance);
+
+        // Resume: wide, tall, and the one window whose content genuinely needs
+        // to scroll internally rather than pushing the whole page taller.
+        resume.style.left = '0px';
+        resume.style.top = topY + 'px';
+        resume.style.width = '760px';
+        resume.style.height = availableH + 'px';
+        bringToFront(resume);
+
+        // Links: natural height, stacked above Contact in a right-hand column.
+        links.style.left = '800px';
+        links.style.top = topY + 'px';
+        links.style.width = '420px';
+        bringToFront(links);
+
+        requestAnimationFrame(function(){
+          var linksBottom = links.offsetTop + links.offsetHeight;
+          contact.style.left = '800px';
+          contact.style.top = (linksBottom + 24) + 'px';
+          contact.style.width = '420px';
+          bringToFront(contact);
+          updateCanvasHeight();
+        });
       });
     }
 
