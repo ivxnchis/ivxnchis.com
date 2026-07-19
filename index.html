@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IVXNCHIS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --menubar-bg: rgba(255,255,255,0.65);
+    --window-bg: rgba(255,255,255,0.82);
+    --window-header: rgba(246,246,248,0.9);
+    --dock-bg: rgba(255,255,255,0.55);
+    --dock-border: rgba(255,255,255,0.6);
+    --ink: #1d1d1f;
+    --ink-soft: #6e6e73;
+    --hair: rgba(0,0,0,0.08);
+    --accent: #0071e3;
+    --accent-soft: rgba(0,113,227,0.1);
+    --red: #ff5f57;
+    --yellow: #febc2e;
+    --green: #28c840;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root{
+      --menubar-bg: rgba(28,28,30,0.7);
+      --window-bg: rgba(30,30,33,0.82);
+      --window-header: rgba(40,40,44,0.92);
+      --dock-bg: rgba(30,30,33,0.6);
+      --dock-border: rgba(255,255,255,0.14);
+      --ink: #f5f5f7;
+      --ink-soft: #9a9aa0;
+      --hair: rgba(255,255,255,0.1);
+      --accent: #0a84ff;
+      --accent-soft: rgba(10,132,255,0.18);
+    }
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color:var(--ink);
+    background: linear-gradient(180deg,
+      #1f3868 0%,
+      #3f5f9c 18%,
+      #6c8fc4 34%,
+      #a9bfd9 50%,
+      #d3dcd8 64%,
+      #b9d3bd 82%,
+      #a4cbae 100%);
+    background-attachment: fixed;
+  }
+
+  ::selection{ background: var(--accent); color:#fff; }
+  a{ color:inherit; }
+  a:focus-visible, button:focus-visible, input:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:3px;
+    border-radius:4px;
+  }
+
+  /* ---------------- Menu bar ---------------- */
+  .menubar{
+    position:sticky;
+    top:0;
+    z-index:40;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 0.45rem 1rem;
+    background:var(--menubar-bg);
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    border-bottom:1px solid var(--hair);
+    font-size:0.82rem;
+    font-weight:500;
+  }
+  .menubar-left{ display:flex; align-items:center; gap:1.15rem; }
+  .menubar-left .brand{ font-weight:700; }
+  .menubar-left .menu-item{ color: var(--ink-soft); display:none; }
+  .menubar-right{ display:flex; align-items:center; gap:0.7rem; color:var(--ink-soft); white-space:nowrap; }
+  @media (min-width:640px){
+    .menubar-left .menu-item{ display:inline; }
+  }
+  @media (max-width:420px){
+    .menubar{ padding:0.45rem 0.75rem; font-size:0.74rem; }
+    .menubar-right{ gap:0.5rem; }
+    .menubar-right .loc-text{ display:none; }
+  }
+
+  /* ---------------- Desktop shortcuts ---------------- */
+  .desktop-icons{
+    position:absolute;
+    top:4.2rem;
+    right:1rem;
+    display:flex;
+    flex-direction:column;
+    gap:1.1rem;
+    z-index:5;
+  }
+  .desktop-icon{
+    background:none;
+    border:none;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0.3rem;
+    width:74px;
+    font-family:inherit;
+    color:var(--ink);
+    padding:0.4rem 0.3rem;
+    border-radius:8px;
+  }
+  .desktop-icon:hover{ background:rgba(255,255,255,0.35); }
+  .desktop-icon .glyph{
+    width:38px; height:38px;
+    border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.1rem;
+    box-shadow:0 6px 14px rgba(0,0,0,0.12);
+  }
+  .desktop-icon span.label{
+    font-size:0.68rem;
+    text-align:center;
+    color:#fff;
+    text-shadow:0 1px 4px rgba(0,0,0,0.45);
+    line-height:1.2;
+  }
+  @media (max-width:640px){ .desktop-icons{ display:none; } }
+
+  /* ---------------- Layout ---------------- */
+  main{
+    max-width:920px;
+    margin:0 auto;
+    padding: 4.5rem 1.25rem 9rem;
+  }
+
+  .hero{ text-align:center; margin-bottom: 3rem; }
+  .avatar-ring{
+    width:96px; height:96px;
+    border-radius:26px;
+    margin:0 auto 1.1rem;
+    background: linear-gradient(135deg, #7c8cff, #ff9ac3);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:1.6rem; color:#fff;
+    box-shadow: 0 16px 34px rgba(87, 91, 214, 0.28);
+  }
+  .hero h1{
+    font-size: clamp(1.9rem, 5vw, 2.6rem);
+    font-weight:800;
+    letter-spacing:-0.02em;
+    margin:0 0 0.25rem;
+    color:#fff;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  }
+  .hero .subtitle{ color:rgba(255,255,255,0.92); font-size:1.05rem; margin:0 0 0.15rem; text-shadow: 0 1px 8px rgba(0,0,0,0.2); }
+  .hero .loc{ color:rgba(255,255,255,0.8); font-size:0.9rem; text-shadow: 0 1px 8px rgba(0,0,0,0.2); }
+
+  /* ---------------- Window chrome ---------------- */
+  .window{
+    background:var(--window-bg);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    border-radius:14px;
+    border:1px solid var(--dock-border);
+    box-shadow: 0 30px 60px -20px rgba(30,30,50,0.28), 0 2px 8px rgba(30,30,50,0.06);
+    overflow:hidden;
+    margin-bottom: 2.6rem;
+  }
+  .window-header{
+    display:flex;
+    align-items:center;
+    gap:0.9rem;
+    padding:0.65rem 1rem;
+    background:var(--window-header);
+    border-bottom:1px solid var(--hair);
+  }
+  .traffic{ display:flex; gap:8px; }
+  .traffic span{ width:12px; height:12px; border-radius:50%; display:inline-block; }
+  .traffic .r{ background:var(--red); }
+  .traffic .y{ background:var(--yellow); }
+  .traffic .g{ background:var(--green); }
+  .window-title{
+    font-size:0.82rem;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin:0 auto;
+    transform: translateX(-18px);
+  }
+
+  /* ---------------- Finder-style links list ---------------- */
+  .finder-cols{
+    display:grid;
+    grid-template-columns: 1fr 90px 120px;
+    gap:0.5rem;
+    padding:0.5rem 1.2rem;
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--ink-soft);
+    border-bottom:1px solid var(--hair);
+  }
+  .finder-list{ list-style:none; margin:0; padding:0.35rem 0.6rem 0.6rem; }
+  .finder-row{
+    display:grid;
+    grid-template-columns: 1fr 90px 120px;
+    align-items:center;
+    gap:0.5rem;
+    padding:0.55rem 0.6rem;
+    border-radius:8px;
+    text-decoration:none;
+    color:var(--ink);
+  }
+  .finder-row:hover, .finder-row:focus-visible{ background:var(--accent-soft); }
+  .finder-name{ display:flex; align-items:center; gap:0.7rem; font-size:0.94rem; }
+  .finder-icon{
+    width:26px; height:26px; border-radius:7px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.65rem; font-weight:700; color:#fff;
+  }
+  .finder-kind, .finder-date{ font-size:0.82rem; color:var(--ink-soft); }
+
+  @media (max-width:560px){
+    .finder-cols{ display:none; }
+    .finder-row{ grid-template-columns: 1fr; row-gap:0.15rem; }
+    .finder-kind{ padding-left:2.6rem; }
+    .finder-date{ display:none; }
+  }
+
+  /* ---------------- Preview-style resume document ---------------- */
+  .doc-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0.5rem 1.2rem;
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    border-bottom:1px solid var(--hair);
+  }
+  .doc-page{
+    /* the "paper" always stays light, like a real document in Preview —
+       re-pin these locally so dark mode never inverts the sheet's text */
+    --ink: #1d1d1f;
+    --ink-soft: #6e6e73;
+    --accent: #0071e3;
+    --accent-soft: rgba(0,113,227,0.1);
+    --hair: rgba(0,0,0,0.08);
+    color: var(--ink);
+    background:#fff;
+    margin:1.5rem auto;
+    width:calc(100% - 3rem);
+    max-width:640px;
+    border-radius:6px;
+    box-shadow:0 10px 26px rgba(0,0,0,0.12);
+    padding: 2.1rem 1.9rem 2.4rem;
+  }
+  .doc-page h2{
+    font-size:1.35rem;
+    margin:0 0 0.2rem;
+    letter-spacing:-0.01em;
+  }
+  .doc-page .role{ color:var(--ink-soft); font-size:0.9rem; margin-bottom:0.9rem; }
+  .doc-page .summary{ font-size:0.92rem; line-height:1.6; margin-bottom:1.6rem; }
+
+  .doc-section{ margin-bottom:1.5rem; }
+  .doc-section h3{
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--accent);
+    border-bottom:1px solid var(--hair);
+    padding-bottom:0.4rem;
+    margin:0 0 0.75rem;
+  }
+  .doc-job{ margin-bottom:1.05rem; }
+  .doc-job .jtitle{ font-size:0.94rem; font-weight:600; }
+  .doc-job .jmeta{ font-size:0.78rem; color:var(--ink-soft); margin-bottom:0.3rem; }
+  .doc-job ul{ margin:0.3rem 0 0; padding-left:1.15rem; font-size:0.86rem; line-height:1.55; }
+  .doc-job li{ margin-bottom:0.2rem; }
+
+  .doc-edu{ font-size:0.88rem; margin-bottom:0.7rem; }
+  .doc-edu .school{ color:var(--ink-soft); font-size:0.78rem; }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:0.45rem; }
+  .chip{
+    font-size:0.76rem;
+    background:var(--accent-soft);
+    color:var(--accent);
+    padding:0.3rem 0.65rem;
+    border-radius:20px;
+    font-weight:500;
+  }
+
+  .contact-grid{ display:grid; grid-template-columns:auto 1fr; gap:0.35rem 1rem; font-size:0.88rem; }
+  .contact-grid dt{ color:var(--ink-soft); }
+  .contact-grid dd{ margin:0; }
+
+  /* ---------------- Dock ---------------- */
+  .dock-wrap{
+    position:fixed;
+    left:0; right:0; bottom:0.9rem;
+    bottom: max(0.9rem, env(safe-area-inset-bottom));
+    display:flex;
+    justify-content:center;
+    z-index:30;
+    pointer-events:none;
+    padding: 0 0.75rem;
+  }
+  .dock{
+    pointer-events:all;
+    display:flex;
+    align-items:flex-end;
+    gap:0.55rem;
+    padding:0.55rem 0.8rem;
+    background:var(--dock-bg);
+    backdrop-filter: blur(22px) saturate(1.6);
+    -webkit-backdrop-filter: blur(22px) saturate(1.6);
+    border-radius:20px;
+    border:1px solid var(--dock-border);
+    box-shadow: 0 18px 40px rgba(20,20,40,0.22);
+  }
+  .dock-item{
+    position:relative;
+    width:48px; height:48px;
+    border-radius:12px;
+    border:none;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff;
+    font-weight:700;
+    font-size:0.78rem;
+    text-decoration:none;
+    transition: transform 0.14s ease, margin 0.14s ease;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.18);
+    flex-shrink:0;
+  }
+  .dock-item:hover{ transform: translateY(-10px) scale(1.14); }
+  .dock-item::after{
+    content: attr(data-label);
+    position:absolute;
+    bottom:calc(100% + 10px);
+    left:50%;
+    transform: translateX(-50%);
+    background:rgba(30,30,32,0.85);
+    color:#fff;
+    font-size:0.72rem;
+    font-weight:500;
+    padding:0.3rem 0.6rem;
+    border-radius:6px;
+    white-space:nowrap;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity 0.12s ease;
+  }
+  .dock-item:hover::after, .dock-item:focus-visible::after{ opacity:1; }
+
+  @media (max-width:480px){
+    .dock{ gap:0.4rem; padding:0.45rem 0.6rem; border-radius:18px; max-width:100%; overflow-x:auto; scrollbar-width:none; }
+    .dock::-webkit-scrollbar{ display:none; }
+    .dock-item{ width:40px; height:40px; border-radius:10px; font-size:0.68rem; }
+    .dock-item:hover{ transform: translateY(-6px) scale(1.08); }
+    .dock-item::after{ display:none; }
+  }
+  .dock-dot{
+    position:absolute;
+    bottom:-7px;
+    left:50%;
+    transform:translateX(-50%);
+    width:4px; height:4px;
+    border-radius:50%;
+    background:var(--ink-soft);
+  }
+  .dock-sep{ width:1px; align-self:stretch; background:rgba(0,0,0,0.1); margin: 4px 0.15rem; }
+
+  .ig{ background: radial-gradient(circle at 30% 110%, #fdf497 0%, #fd5949 30%, #d6249f 55%, #285AEB 100%); }
+  .x{ background:#000; }
+  .tt{ background: linear-gradient(135deg, #010101 0%, #010101 45%, #25f4ee 70%, #fe2c55 100%); }
+  .dc{ background:#5865F2; }
+  .sp{ background:#1DB954; }
+  .lb{ background: linear-gradient(135deg, #00e054, #40bcf4 55%, #ff8000); }
+  .wa{ background:#25D366; }
+  .mail{ background: linear-gradient(160deg, #6b8cff, #3a5be0); }
+
+  footer{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:0.8rem;
+    padding-bottom:2rem;
+  }
+
+  /* ---------------- Boot screen ---------------- */
+  #bootScreen{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    background:#000;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:1.6rem;
+    transition: opacity 0.5s ease;
+  }
+  #bootScreen.hidden{ opacity:0; pointer-events:none; }
+  .boot-mark{
+    width:64px; height:64px;
+    border-radius:18px;
+    background: linear-gradient(135deg, #7c8cff, #ff9ac3);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Inter', sans-serif;
+    font-weight:800;
+    font-size:1.35rem;
+    color:#fff;
+  }
+  .boot-bar{
+    width:180px;
+    height:4px;
+    border-radius:4px;
+    background:rgba(255,255,255,0.18);
+    overflow:hidden;
+  }
+  .boot-bar-fill{
+    height:100%;
+    width:0%;
+    border-radius:4px;
+    background:#fff;
+    animation: bootfill 1.3s ease forwards 0.15s;
+  }
+  @keyframes bootfill{ to{ width:100%; } }
+
+  /* ---------------- Reveal / window-open animation ---------------- */
+  body.booting .menubar,
+  body.booting .desktop-icons,
+  body.booting main .window,
+  body.booting .dock-wrap,
+  body.booting footer{
+    opacity:0;
+  }
+  .menubar, .desktop-icons, .dock-wrap, footer{
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34,1.2,0.64,1);
+  }
+  body.booting .menubar{ transform: translateY(-100%); }
+  body.booting .dock-wrap{ transform: translateY(30px); }
+
+  main .window{
+    transform-origin: 50% 20%;
+    transition: opacity 0.5s cubic-bezier(0.22,1,0.36,1), transform 0.5s cubic-bezier(0.22,1,0.36,1);
+  }
+  body.booting main .window{ transform: scale(0.9) translateY(18px); }
+  main .window:nth-of-type(1){ transition-delay: 0.08s; }
+  main .window:nth-of-type(2){ transition-delay: 0.18s; }
+  main .window:nth-of-type(3){ transition-delay: 0.28s; }
+  .dock-wrap{ transition-delay: 0.32s; }
+  footer{ transition-delay: 0.4s; }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .dock-item{ transition:none; }
+    .dock-item:hover{ transform:none; }
+    #bootScreen{ display:none; }
+    body.booting .menubar, body.booting .desktop-icons, body.booting main .window,
+    body.booting .dock-wrap, body.booting footer{ opacity:1; transform:none; }
+    .menubar, .dock-wrap, main .window{ transition:none; }
+  }
+</style>
+</head>
+<body class="booting">
+
+<div id="bootScreen" aria-hidden="true">
+  <div class="boot-mark">IC</div>
+  <div class="boot-bar"><div class="boot-bar-fill"></div></div>
+</div>
+
+<div class="menubar">
+  <div class="menubar-left">
+    <span class="brand">IVXNCHIS</span>
+    <span class="menu-item">File</span>
+    <span class="menu-item">Edit</span>
+    <span class="menu-item">View</span>
+    <span class="menu-item">Window</span>
+    <span class="menu-item">Help</span>
+  </div>
+  <div class="menubar-right">
+    <span class="loc-text">Bucaramanga, CO</span>
+    <span id="clock"></span>
+  </div>
+</div>
+
+<div class="desktop-icons">
+  <button class="desktop-icon" data-target="links">
+    <span class="glyph" style="background:linear-gradient(160deg,#8fb7ff,#5a86f7);">📁</span>
+    <span class="label">Links</span>
+  </button>
+  <button class="desktop-icon" data-target="resume">
+    <span class="glyph" style="background:linear-gradient(160deg,#ff9d9d,#f45c5c);">📄</span>
+    <span class="label">Resume.pdf</span>
+  </button>
+</div>
+
+<main>
+  <div class="hero">
+    <div class="avatar-ring" aria-hidden="true">IC</div>
+    <h1>IVXNCHIS</h1>
+    <p class="subtitle">Ivan Andres Solano Castro — Customer Service Supervisor &amp; Communications Professional</p>
+    <p class="loc">Bucaramanga, Colombia</p>
+  </div>
+
+  <!-- Preview: Resume -->
+  <section class="window" id="resume" aria-label="Resume">
+    <div class="window-header">
+      <div class="traffic"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+      <p class="window-title">Resume.pdf — Preview</p>
+    </div>
+    <div class="doc-toolbar">
+      <span>1 of 1</span>
+      <button type="button" id="shareBtn" style="background:none; border:none; cursor:pointer; padding:0; font-family:inherit; color:var(--accent); text-decoration:none; font-weight:600; font-size:0.78rem;">Share ⤴</button>
+    </div>
+
+    <div class="doc-page">
+      <h2>Ivan Andres Solano Castro</h2>
+      <p class="role">Customer Service Supervisor &amp; Communications Professional — Bucaramanga, Colombia</p>
+      <p class="summary">
+        Customer service leader with six years across bilingual operations, retention, and team management in the online gaming industry. Currently leads a 10-agent team supporting VIP and general players, drawing on a communications background to build team culture and read player sentiment. Runs retention-focused email and marketing campaigns, manages affiliate relationships, and communicates with an international, multi-market player base.
+      </p>
+
+      <div class="doc-section">
+        <h3>Work Experience</h3>
+
+        <div class="doc-job">
+          <div class="jtitle">Customer Service Supervisor, Data Analyst &amp; Retention Specialist</div>
+          <div class="jmeta">Anj of Gold Limitada — April 2025 – Present</div>
+          <ul>
+            <li>Lead and coach a 10-agent team supporting VIP and general players, setting retention/outreach strategy behind GGR growth.</li>
+            <li>Create and run email and marketing campaigns as part of end-to-end retention outreach.</li>
+            <li>Communicate directly with players across multiple international markets in various languages.</li>
+            <li>Primary point of contact for key affiliate partners, managing revenue-sharing relationships.</li>
+            <li>Translate performance data into a continuous coaching and decision-making loop for the team.</li>
+          </ul>
+        </div>
+
+        <div class="doc-job">
+          <div class="jtitle">Customer Agent</div>
+          <div class="jmeta">Anj of Gold Limitada — October 2024 – March 2025</div>
+          <ul><li>Delivered day-to-day player support and account resolution, earning promotion to Supervisor within six months.</li></ul>
+        </div>
+
+        <div class="doc-job">
+          <div class="jtitle">Bilingual Agent — Altice USA Campaign</div>
+          <div class="jmeta">Accedo Colombia SAS, Bucaramanga — May – July 2022</div>
+          <ul><li>Ran retention outreach for Optimum (Altice USA) cable and internet subscribers in a fast-paced bilingual call environment.</li></ul>
+        </div>
+
+        <div class="doc-job">
+          <div class="jtitle">Bilingual Agent — Cricket Wireless Campaign</div>
+          <div class="jmeta">Accedo Colombia SAS, Bucaramanga — May – October 2020</div>
+          <ul><li>Provided bilingual account support handling payments, billing disputes, and technical troubleshooting.</li></ul>
+        </div>
+
+        <div class="doc-job">
+          <div class="jtitle">Assistant and Client Advisor</div>
+          <div class="jmeta">Stylos Mary, Bucaramanga — January 2016 – July 2019</div>
+          <ul><li>Provided customer service and support to staff and clients.</li></ul>
+        </div>
+      </div>
+
+      <div class="doc-section">
+        <h3>Education</h3>
+        <div class="doc-edu">
+          B.A., Social Communication – Journalism<br>
+          <span class="school">Universidad Pontificia Bolivariana, Bucaramanga — July 2017 – March 2025</span>
+        </div>
+        <div class="doc-edu">
+          Baccalaureate, Industrial Mechanics Technician<br>
+          <span class="school">Instituto Técnico Superior Dámaso Zapata, Bucaramanga — January 2011 – December 2016</span>
+        </div>
+      </div>
+
+      <div class="doc-section">
+        <h3>Languages</h3>
+        <p style="font-size:0.9rem; margin:0;">Spanish — Native &nbsp;|&nbsp; English — C2</p>
+      </div>
+
+      <div class="doc-section" style="margin-bottom:0;">
+        <h3>Skills</h3>
+        <div class="chip-row">
+          <span class="chip">Team leadership</span>
+          <span class="chip">VIP &amp; player relations</span>
+          <span class="chip">Retention strategy</span>
+          <span class="chip">Marketing campaigns</span>
+          <span class="chip">Affiliate relations</span>
+          <span class="chip">Conflict resolution</span>
+          <span class="chip">Multilingual comms</span>
+          <span class="chip">Slack / Teams / Meet</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Finder: Links -->
+  <section class="window" id="links" aria-label="Links">
+    <div class="window-header">
+      <div class="traffic"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+      <p class="window-title">Links — Finder</p>
+    </div>
+    <div class="finder-cols">
+      <span>Name</span><span>Kind</span><span>Comment</span>
+    </div>
+    <ul class="finder-list">
+      <li><a class="finder-row" href="https://instagram.com/ivan.sln" target="_blank" rel="noopener">
+        <span class="finder-name"><span class="finder-icon ig">IG</span>Instagram</span>
+        <span class="finder-kind">Profile</span>
+        <span class="finder-date">@ivan.sln</span>
+      </a></li>
+      <li><a class="finder-row" href="https://x.com/ivxnchis" target="_blank" rel="noopener">
+        <span class="finder-name"><span class="finder-icon x">X</span>X</span>
+        <span class="finder-kind">Profile</span>
+        <span class="finder-date">@ivxnchis</span>
+      </a></li>
+      <li><a class="finder-row" href="https://www.tiktok.com/@ivxnchis" target="_blank" rel="noopener">
+        <span class="finder-name"><span class="finder-icon tt">TT</span>TikTok</span>
+        <span class="finder-kind">Profile</span>
+        <span class="finder-date">@ivxnchis</span>
+      </a></li>
+      <li><a class="finder-row" href="https://discordapp.com/users/IVXNCHIS#2307" target="_blank" rel="noopener">
+        <span class="finder-name"><span class="finder-icon dc">DC</span>Discord</span>
+        <span class="finder-kind">Server</span>
+        <span class="finder-date">IVXNCHIS#2307</span>
+      </a></li>
+      <li><a class="finder-row" href="https://open.spotify.com/user/ivansolanoc" target="_blank" rel="noopener">
+        <span class="finder-name"><span class="finder-icon sp">SP</span>Spotify</span>
+        <span class="finder-kind">Playlist</span>
+        <span class="finder-date">Now playing</span>
+      </a></li>
+      <li><a class="finder-row" href="https://letterboxd.com/IVXNCHIS" target="_blank" rel="noopener">
+        <span class="finder-name"><span class="finder-icon lb">LB</span>Letterboxd</span>
+        <span class="finder-kind">Film log</span>
+        <span class="finder-date">Reviews</span>
+      </a></li>
+      <li><a class="finder-row" href="https://wa.link/rcedvv" target="_blank" rel="noopener">
+        <span class="finder-name"><span class="finder-icon wa">WA</span>WhatsApp</span>
+        <span class="finder-kind">Chat</span>
+        <span class="finder-date">Message me</span>
+      </a></li>
+    </ul>
+  </section>
+
+  <!-- Contact -->
+  <section class="window" id="contact" aria-label="Contact">
+    <div class="window-header">
+      <div class="traffic"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+      <p class="window-title">Contact — Notes</p>
+    </div>
+    <div style="padding:1.4rem 1.6rem 1.8rem;">
+      <dl class="contact-grid">
+        <dt>Email</dt><dd><a href="mailto:reach@ivxnchis.com" style="color:var(--accent); text-decoration:none;">reach@ivxnchis.com</a></dd>
+        <dt>Phone</dt><dd>+57 317 453 9210</dd>
+        <dt>Status</dt><dd style="color:var(--green); font-weight:600;">● Open to opportunities</dd>
+      </dl>
+    </div>
+  </section>
+</main>
+
+<footer>&copy; <span id="year"></span> ivxnchis.com</footer>
+
+<div class="dock-wrap">
+  <nav class="dock" aria-label="Quick links dock">
+    <a class="dock-item ig" href="https://instagram.com/ivan.sln" target="_blank" rel="noopener" data-label="Instagram">IG</a>
+    <a class="dock-item x" href="https://x.com/ivxnchis" target="_blank" rel="noopener" data-label="X">𝕏</a>
+    <a class="dock-item tt" href="https://www.tiktok.com/@ivxnchis" target="_blank" rel="noopener" data-label="TikTok">TT</a>
+    <a class="dock-item dc" href="https://discordapp.com/users/IVXNCHIS#2307" target="_blank" rel="noopener" data-label="Discord">DC</a>
+    <a class="dock-item sp" href="https://open.spotify.com/user/ivansolanoc" target="_blank" rel="noopener" data-label="Spotify">SP</a>
+    <a class="dock-item lb" href="https://letterboxd.com/IVXNCHIS" target="_blank" rel="noopener" data-label="Letterboxd">LB</a>
+    <a class="dock-item wa" href="https://wa.link/rcedvv" target="_blank" rel="noopener" data-label="WhatsApp">WA</a>
+    <span class="dock-sep" aria-hidden="true"></span>
+    <a class="dock-item mail" href="mailto:reach@ivxnchis.com" data-label="Email">✉</a>
+  </nav>
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  function updateClock(){
+    var now = new Date();
+    var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var h = now.getHours();
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    var h12 = h % 12 || 12;
+    var m = String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('clock').textContent = days[now.getDay()] + ' ' + now.getDate() + ' ' + h12 + ':' + m + ' ' + ampm;
+  }
+  updateClock();
+  setInterval(updateClock, 15000);
+
+  document.querySelectorAll('.desktop-icon').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var el = document.getElementById(btn.dataset.target);
+      if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); }
+    });
+  });
+
+  var shareBtn = document.getElementById('shareBtn');
+  if(shareBtn){
+    shareBtn.addEventListener('click', function(){
+      var shareData = {
+        title: 'Ivan Solano Castro — Resume',
+        text: 'Customer Service Supervisor & Communications Professional',
+        url: 'https://ivxnchis.com/#resume'
+      };
+      if(navigator.share){
+        navigator.share(shareData).catch(function(){ /* user cancelled, no-op */ });
+      } else {
+        window.location.href = 'mailto:reach@ivxnchis.com?subject=Requesting%20your%20resume';
+      }
+    });
+  }
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var bootScreen = document.getElementById('bootScreen');
+
+  var revealed = false;
+  function reveal(){
+    if(revealed){ return; }
+    revealed = true;
+    document.body.classList.remove('booting');
+    setTimeout(function(){
+      bootScreen.classList.add('hidden');
+      setTimeout(function(){ bootScreen.remove(); }, 550);
+    }, 150);
+  }
+
+  if(reduceMotion){
+    bootScreen.remove();
+    document.body.classList.remove('booting');
+  } else {
+    window.addEventListener('load', function(){
+      setTimeout(reveal, 1500);
+    });
+    // fallback in case load already fired or is slow to trigger
+    setTimeout(reveal, 2800);
+  }
+</script>
+
+</body>
+</html>
