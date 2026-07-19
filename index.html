@@ -141,11 +141,15 @@
     margin:0 auto;
     padding: 4.5rem 1.25rem 9rem;
   }
+  body.desktop-mode{
+    height:100vh;
+    overflow:hidden;
+  }
   body.desktop-mode main{
     max-width:none;
     width:100%;
-    padding-left:3rem;
-    padding-right:3rem;
+    padding-left:4rem;
+    padding-right:4rem;
     position:relative;
   }
 
@@ -199,6 +203,9 @@
     padding:0.65rem 1rem;
     background:var(--window-header);
     border-bottom:1px solid var(--hair);
+    position:sticky;
+    top:0;
+    z-index:5;
   }
   body.desktop-mode .window-header{ cursor:grab; user-select:none; touch-action:none; }
   body.desktop-mode .window.dragging .window-header{ cursor:grabbing; }
@@ -238,6 +245,10 @@
     letter-spacing:0.04em;
     color:var(--ink-soft);
     border-bottom:1px solid var(--hair);
+    background:var(--window-header);
+    position:sticky;
+    top:44px;
+    z-index:4;
   }
   .finder-list{ list-style:none; margin:0; padding:0.35rem 0.6rem 0.6rem; }
   .finder-row{
@@ -275,6 +286,10 @@
     font-size:0.78rem;
     color:var(--ink-soft);
     border-bottom:1px solid var(--hair);
+    background:var(--window-header);
+    position:sticky;
+    top:44px;
+    z-index:4;
   }
   .doc-page{
     /* the "paper" always stays light, like a real document in Preview —
@@ -782,7 +797,7 @@
       requestAnimationFrame(function(){
         var menubarH = menubar ? menubar.offsetHeight : 0;
         var topY = hero.offsetTop + hero.offsetHeight + 28; // clear the name/hero block
-        var dockClearance = 120; // room for the dock at the bottom of the screen
+        var dockClearance = 150; // room for the dock, plus a safety buffer
         var availableH = Math.max(420, window.innerHeight - menubarH - topY - dockClearance);
 
         // Resume: wide, tall, and the one window whose content genuinely needs
@@ -793,17 +808,18 @@
         resume.style.height = availableH + 'px';
         bringToFront(resume);
 
-        // Links: natural height, stacked above Contact in a right-hand column.
-        links.style.left = '800px';
+        // Links: natural height, stacked above Contact in a right-hand column,
+        // spaced out further to use the open space beside Resume.
+        links.style.left = '900px';
         links.style.top = topY + 'px';
-        links.style.width = '420px';
+        links.style.width = '440px';
         bringToFront(links);
 
         requestAnimationFrame(function(){
           var linksBottom = links.offsetTop + links.offsetHeight;
-          contact.style.left = '800px';
+          contact.style.left = '900px';
           contact.style.top = (linksBottom + 24) + 'px';
-          contact.style.width = '420px';
+          contact.style.width = '440px';
           bringToFront(contact);
           updateCanvasHeight();
         });
@@ -900,6 +916,12 @@
     });
 
     syncMode();
+
+    if(document.fonts && document.fonts.ready){
+      document.fonts.ready.then(function(){
+        if(desktopModeActive) layoutWindows();
+      });
+    }
   })();
 
   var shareBtn = document.getElementById('shareBtn');
