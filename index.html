@@ -148,8 +148,8 @@
   body.desktop-mode main{
     max-width:none;
     width:100%;
-    padding-left:4rem;
-    padding-right:4rem;
+    padding-left:5.5rem;
+    padding-right:5.5rem;
     position:relative;
   }
 
@@ -818,8 +818,8 @@
 
       requestAnimationFrame(function(){
         var menubarH = menubar ? menubar.offsetHeight : 0;
-        var topY = hero.offsetTop + hero.offsetHeight + 28; // clear the name/hero block
-        var dockClearance = 150; // room for the dock, plus a safety buffer
+        var topY = hero.offsetTop + hero.offsetHeight + 44; // clear the name/hero block
+        var dockClearance = 175; // room for the dock, plus a safety buffer
         var availableH = Math.max(420, window.innerHeight - menubarH - topY - dockClearance);
 
         // Size columns relative to the actual canvas width so the layout
