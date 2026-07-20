@@ -1458,6 +1458,82 @@
   </nav>
 </div>
 
+
+
+
+<!-- Spotlight Search -->
+<div id="spotlight" aria-hidden="true">
+  <div class="spotlight-box">
+    <div class="spotlight-input-wrap">
+      <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg>
+      <input type="text" id="spotlightInput" placeholder="Spotlight Search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <span class="spotlight-kbd"><kbd>esc</kbd> to close</span>
+    </div>
+    <div class="spotlight-results" id="spotlightResults"></div>
+  </div>
+</div>
+
+<!-- Mission Control -->
+<div id="missionControl" aria-hidden="true">
+  <div class="mc-bar" id="mcBar"></div>
+  <p class="mc-dock-hint">Click a window to focus it</p>
+</div>
+
+<!-- Notification Center -->
+<aside id="notifCenter" aria-hidden="true" aria-label="Notification Center">
+  <div class="nc-header">
+    <h3>Notification Center</h3>
+    <button class="nc-close" id="ncClose" aria-label="Close Notification Center">×</button>
+  </div>
+  <div class="nc-content">
+    <div class="nc-widget">
+      <div class="nc-weather">
+        <div>
+          <div class="temp">24°</div>
+          <div class="loc">Bucaramanga, CO</div>
+        </div>
+        <div>
+          <div class="cond">⛅ Partly Cloudy</div>
+          <div class="cond">H:28° L:19°</div>
+        </div>
+      </div>
+    </div>
+    <div class="nc-widget">
+      <h4>Now</h4>
+      <p>🟢 Open to opportunities</p>
+      <div class="nc-time">Customer Service Supervisor</div>
+    </div>
+    <div class="nc-widget">
+      <h4>Recent</h4>
+      <p>📄 Resume updated</p>
+      <div class="nc-time">2 days ago</div>
+    </div>
+    <div class="nc-widget">
+      <h4>Quick Actions</h4>
+      <p style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.3rem;">
+        <button class="chip" onclick="document.getElementById('notifCenter').classList.remove('active');document.getElementById('spotlight').classList.add('active');document.getElementById('spotlightInput').focus();" style="cursor:pointer;border:none;font-family:inherit;">🔍 Spotlight</button>
+        <button class="chip" onclick="document.getElementById('notifCenter').classList.remove('active');document.getElementById('missionControl').classList.add('active');" style="cursor:pointer;border:none;font-family:inherit;">🪟 Mission Control</button>
+        <button class="chip" onclick="window.open('mailto:reach@ivxnchis.com','_blank')" style="cursor:pointer;border:none;font-family:inherit;">✉️ Email</button>
+      </p>
+    </div>
+  </div>
+</aside>
+
+<!-- Context Menu -->
+<div id="contextMenu" aria-hidden="true">
+  <button class="ctx-item" data-action="refresh">🔄 Refresh <span class="ctx-shortcut">⌘R</span></button>
+  <div class="ctx-sep"></div>
+  <button class="ctx-item" data-action="spotlight">🔍 Spotlight Search <span class="ctx-shortcut">⌘␣</span></button>
+  <button class="ctx-item" data-action="mission">🪟 Mission Control <span class="ctx-shortcut">⌃↑</span></button>
+  <button class="ctx-item" data-action="notif">🔔 Notification Center <span class="ctx-shortcut"></span></button>
+  <div class="ctx-sep"></div>
+  <button class="ctx-item" data-action="resume">📄 Open Resume <span class="ctx-shortcut"></span></button>
+  <button class="ctx-item" data-action="links">📁 Open Links <span class="ctx-shortcut"></span></button>
+  <button class="ctx-item" data-action="contact">📝 Open Contact <span class="ctx-shortcut"></span></button>
+  <div class="ctx-sep"></div>
+  <button class="ctx-item" data-action="darkmode">🌙 Toggle Dark Mode <span class="ctx-shortcut"></span></button>
+</div>
+
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
 
@@ -2069,80 +2145,6 @@
   })();
 
 </script>
-
-
-<!-- Spotlight Search -->
-<div id="spotlight" aria-hidden="true">
-  <div class="spotlight-box">
-    <div class="spotlight-input-wrap">
-      <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg>
-      <input type="text" id="spotlightInput" placeholder="Spotlight Search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-      <span class="spotlight-kbd"><kbd>esc</kbd> to close</span>
-    </div>
-    <div class="spotlight-results" id="spotlightResults"></div>
-  </div>
-</div>
-
-<!-- Mission Control -->
-<div id="missionControl" aria-hidden="true">
-  <div class="mc-bar" id="mcBar"></div>
-  <p class="mc-dock-hint">Click a window to focus it</p>
-</div>
-
-<!-- Notification Center -->
-<aside id="notifCenter" aria-hidden="true" aria-label="Notification Center">
-  <div class="nc-header">
-    <h3>Notification Center</h3>
-    <button class="nc-close" id="ncClose" aria-label="Close Notification Center">×</button>
-  </div>
-  <div class="nc-content">
-    <div class="nc-widget">
-      <div class="nc-weather">
-        <div>
-          <div class="temp">24°</div>
-          <div class="loc">Bucaramanga, CO</div>
-        </div>
-        <div>
-          <div class="cond">⛅ Partly Cloudy</div>
-          <div class="cond">H:28° L:19°</div>
-        </div>
-      </div>
-    </div>
-    <div class="nc-widget">
-      <h4>Now</h4>
-      <p>🟢 Open to opportunities</p>
-      <div class="nc-time">Customer Service Supervisor</div>
-    </div>
-    <div class="nc-widget">
-      <h4>Recent</h4>
-      <p>📄 Resume updated</p>
-      <div class="nc-time">2 days ago</div>
-    </div>
-    <div class="nc-widget">
-      <h4>Quick Actions</h4>
-      <p style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.3rem;">
-        <button class="chip" onclick="document.getElementById('notifCenter').classList.remove('active');document.getElementById('spotlight').classList.add('active');document.getElementById('spotlightInput').focus();" style="cursor:pointer;border:none;font-family:inherit;">🔍 Spotlight</button>
-        <button class="chip" onclick="document.getElementById('notifCenter').classList.remove('active');document.getElementById('missionControl').classList.add('active');" style="cursor:pointer;border:none;font-family:inherit;">🪟 Mission Control</button>
-        <button class="chip" onclick="window.open('mailto:reach@ivxnchis.com','_blank')" style="cursor:pointer;border:none;font-family:inherit;">✉️ Email</button>
-      </p>
-    </div>
-  </div>
-</aside>
-
-<!-- Context Menu -->
-<div id="contextMenu" aria-hidden="true">
-  <button class="ctx-item" data-action="refresh">🔄 Refresh <span class="ctx-shortcut">⌘R</span></button>
-  <div class="ctx-sep"></div>
-  <button class="ctx-item" data-action="spotlight">🔍 Spotlight Search <span class="ctx-shortcut">⌘␣</span></button>
-  <button class="ctx-item" data-action="mission">🪟 Mission Control <span class="ctx-shortcut">⌃↑</span></button>
-  <button class="ctx-item" data-action="notif">🔔 Notification Center <span class="ctx-shortcut"></span></button>
-  <div class="ctx-sep"></div>
-  <button class="ctx-item" data-action="resume">📄 Open Resume <span class="ctx-shortcut"></span></button>
-  <button class="ctx-item" data-action="links">📁 Open Links <span class="ctx-shortcut"></span></button>
-  <button class="ctx-item" data-action="contact">📝 Open Contact <span class="ctx-shortcut"></span></button>
-  <div class="ctx-sep"></div>
-  <button class="ctx-item" data-action="darkmode">🌙 Toggle Dark Mode <span class="ctx-shortcut"></span></button>
-</div>
 
 </body>
 </html>
