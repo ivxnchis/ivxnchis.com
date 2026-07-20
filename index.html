@@ -42,6 +42,21 @@
     }
   }
 
+  /* Manual override from the right-click menu's "Toggle Dark Mode" —
+     forces the same dark palette regardless of system preference. */
+  html.force-dark{
+    --menubar-bg: rgba(28,28,30,0.7);
+    --window-bg: rgba(30,30,33,0.82);
+    --window-header: rgba(40,40,44,0.92);
+    --dock-bg: rgba(30,30,33,0.6);
+    --dock-border: rgba(255,255,255,0.14);
+    --ink: #f5f5f7;
+    --ink-soft: #9a9aa0;
+    --hair: rgba(255,255,255,0.1);
+    --accent: #0a84ff;
+    --accent-soft: rgba(10,132,255,0.18);
+  }
+
   *{ box-sizing:border-box; }
   html{ scroll-behavior:smooth; }
   body{
@@ -209,6 +224,7 @@
     overflow-x:hidden;
     overflow-y:auto;
     margin-bottom: 2.6rem;
+    position:relative;
   }
   /* Desktop canvas mode: windows become free-floating, draggable, resizable */
   body.desktop-mode .window{
@@ -228,6 +244,7 @@
     padding:0 1rem;
     background:var(--window-header);
     border-bottom:1px solid var(--hair);
+    position:-webkit-sticky;
     position:sticky;
     top:0;
     z-index:5;
@@ -271,6 +288,7 @@
     color:var(--ink-soft);
     border-bottom:1px solid var(--hair);
     background:var(--window-header);
+    position:-webkit-sticky;
     position:sticky;
     top:44px;
     z-index:4;
@@ -542,13 +560,670 @@
     body.booting .dock-wrap, body.booting footer{ opacity:1; transform:none; }
     .menubar, .dock-wrap, main .window{ transition:none; }
   }
+
+  /* ===== macOS Improvements ===== */
+
+  /* Traffic light hover symbols */
+  .traffic span{ position: relative; }
+  .traffic span::before{
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: 600;
+    color: rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.12s ease;
+    line-height: 1;
+  }
+  .traffic .r::before{ content: '×'; }
+  .traffic .y::before{ content: '−'; }
+  .traffic .g::before{ content: '⤢'; font-size: 6px; }
+  .window-header:hover .traffic span::before{ opacity: 1; }
+
+  /* Scrollbar styling — macOS overlay style */
+  .window::-webkit-scrollbar{ width: 8px; height: 8px; }
+  .window::-webkit-scrollbar-track{ background: transparent; }
+  .window::-webkit-scrollbar-thumb{
+    background: rgba(0,0,0,0.18);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  .window::-webkit-scrollbar-thumb:hover{ background: rgba(0,0,0,0.3); background-clip: padding-box; }
+  .window::-webkit-scrollbar-corner{ background: transparent; }
+  @media (prefers-color-scheme: dark){
+    .window::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.18); background-clip: padding-box; }
+    .window::-webkit-scrollbar-thumb:hover{ background: rgba(255,255,255,0.3); background-clip: padding-box; }
+  }
+
+  /* Active window dimming — background windows look muted */
+  body.desktop-mode .window{
+    transition: opacity 0.25s ease, box-shadow 0.25s ease, transform 0.5s cubic-bezier(0.22,1,0.36,1);
+  }
+  body.desktop-mode .window:not(:hover):not(.dragging){
+    opacity: 0.88;
+  }
+  body.desktop-mode .window:hover,
+  body.desktop-mode .window.dragging{
+    opacity: 1;
+  }
+
+  /* Window top bevel highlight */
+  .window::before{
+    content: '';
+    position: absolute;
+    top: 0; left: 1px; right: 1px;
+    height: 1px;
+    background: rgba(255,255,255,0.35);
+    border-radius: 14px 14px 0 0;
+    pointer-events: none;
+    z-index: 6;
+  }
+  @media (prefers-color-scheme: dark){
+    .window::before{ background: rgba(255,255,255,0.08); }
+  }
+
+  /* Improved window shadow — more directional like macOS */
+  .window{
+    box-shadow:
+      0 0 0 0.5px rgba(0,0,0,0.05),
+      0 2px 8px rgba(0,0,0,0.04),
+      0 8px 24px rgba(0,0,0,0.08),
+      0 24px 60px -12px rgba(0,0,0,0.18);
+  }
+  body.desktop-mode .window.dragging{
+    box-shadow:
+      0 0 0 0.5px rgba(0,0,0,0.06),
+      0 4px 12px rgba(0,0,0,0.06),
+      0 12px 32px rgba(0,0,0,0.1),
+      0 36px 80px -12px rgba(0,0,0,0.22);
+  }
+
+  /* Menubar active/hover states */
+  .menubar-left .menu-item,
+  .menubar-left .brand{
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    cursor: default;
+    transition: background 0.12s ease;
+  }
+  .menubar-left .menu-item:hover,
+  .menubar-left .brand:hover{
+    background: rgba(0,0,0,0.06);
+  }
+  @media (prefers-color-scheme: dark){
+    .menubar-left .menu-item:hover,
+    .menubar-left .brand:hover{
+      background: rgba(255,255,255,0.1);
+    }
+  }
+
+  /* Dock click bounce */
+  .dock-item:active{
+    transform: scale(0.88) translateY(-2px);
+    transition: transform 0.08s ease;
+  }
+
+  /* Finder sidebar */
+  /* Links window: sidebar + content layout */
+  .links-body{
+    display: flex;
+    align-items: flex-start;
+  }
+  .links-content{
+    flex: 1;
+    min-width: 0;
+  }
+  .finder-sidebar{
+    display: none;
+    width: 140px;
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.02);
+    border-right: 1px solid var(--hair);
+    padding: 0.5rem 0 0;
+    align-self: stretch;
+  }
+  .finder-sidebar::-webkit-scrollbar{ width: 4px; }
+  .finder-sidebar::-webkit-scrollbar-thumb{ background: rgba(0,0,0,0.1); border-radius: 2px; }
+  .finder-sidebar h4{
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    margin: 0 0.9rem 0.3rem;
+    font-weight: 600;
+  }
+  .finder-sidebar a{
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.82rem;
+    color: var(--ink);
+    text-decoration: none;
+    transition: background 0.08s ease;
+    line-height: 1.4;
+  }
+  .finder-sidebar a:hover,
+  .finder-sidebar a:focus-visible{
+    background: var(--accent-soft);
+  }
+  .finder-sidebar a.active{
+    background: var(--accent);
+    color: #fff;
+  }
+  /* Show sidebar on wide enough viewports */
+  @media (min-width: 640px){
+    .finder-sidebar{ display: block; }
+  }
+  /* Desktop mode: hide sidebar on narrow windows, show on wide */
+  body.desktop-mode .finder-sidebar{
+    display: none;
+  }
+  body.desktop-mode .links-body{
+    display: block;
+  }
+  @media (min-width: 900px){
+    body.desktop-mode .finder-sidebar{ display: block; }
+    body.desktop-mode .links-body{ display: flex; }
+  }
+
+  /* Boot screen → Login screen style */
+  #bootScreen{
+    background:
+      linear-gradient(180deg, #1f3868 0%, #3f5f9c 18%, #6c8fc4 34%, #a9bfd9 50%, #d3dcd8 64%, #b9d3bd 82%, #a4cbae 100%);
+    background-attachment: fixed;
+  }
+  #bootScreen::before{
+    content: '';
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(60px) saturate(1.4);
+    -webkit-backdrop-filter: blur(60px) saturate(1.4);
+  }
+  .boot-content{
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+  }
+  .boot-avatar{
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7c8cff, #ff9ac3);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 1.8rem; color: #fff;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    border: 3px solid rgba(255,255,255,0.3);
+  }
+  .boot-name{
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .boot-bar{
+    width: 160px;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.2);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .boot-bar-fill{
+    height: 100%;
+    width: 0%;
+    border-radius: 3px;
+    background: #fff;
+    animation: bootfill 1.6s ease-in-out forwards 0.3s;
+  }
+  @keyframes bootfill{
+    0%{ width: 0%; }
+    30%{ width: 35%; }
+    60%{ width: 70%; }
+    100%{ width: 100%; }
+  }
+
+  /* Window title — more macOS-like centering */
+  .window-title{
+    transform: translateX(-22px);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  /* Traffic lights — slightly more realistic sizing */
+  .traffic span{
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow:
+      inset 0 0 0 0.5px rgba(0,0,0,0.06),
+      0 0.5px 1px rgba(0,0,0,0.1);
+  }
+  .traffic .r{ background: #ff5f57; }
+  .traffic .y{ background: #febc2e; }
+  .traffic .g{ background: #28c840; }
+
+  /* Smooth window focus transition */
+  .window{
+    transition:
+      opacity 0.25s ease,
+      box-shadow 0.25s ease,
+      transform 0.5s cubic-bezier(0.22,1,0.36,1),
+      left 0.15s ease,
+      top 0.15s ease,
+      width 0.15s ease,
+      height 0.15s ease;
+  }
+  body.desktop-mode .window.dragging{
+    transition:
+      opacity 0.25s ease,
+      box-shadow 0.25s ease,
+      transform 0.5s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  /* Window active state for dimming */
+  body.desktop-mode .window:not(.window-active):not(:hover):not(.dragging){
+    opacity: 0.82;
+  }
+  body.desktop-mode .window.window-active,
+  body.desktop-mode .window:hover,
+  body.desktop-mode .window.dragging{
+    opacity: 1;
+  }
+
+  /* ===================== SPOTLIGHT SEARCH ===================== */
+  #spotlight{
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 18vh;
+    background: rgba(0,0,0,0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+  }
+  #spotlight.active{
+    opacity: 1;
+    pointer-events: all;
+  }
+  .spotlight-box{
+    width: 100%;
+    max-width: 520px;
+    background: rgba(40,40,44,0.82);
+    backdrop-filter: blur(40px) saturate(1.6);
+    -webkit-backdrop-filter: blur(40px) saturate(1.6);
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.4), 0 0 0 0.5px rgba(0,0,0,0.3);
+    overflow: hidden;
+    transform: scale(0.96) translateY(-8px);
+    transition: transform 0.22s cubic-bezier(0.22,1,0.36,1);
+  }
+  #spotlight.active .spotlight-box{
+    transform: scale(1) translateY(0);
+  }
+  .spotlight-input-wrap{
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .spotlight-input-wrap svg{
+    flex-shrink: 0;
+    color: rgba(255,255,255,0.5);
+  }
+  #spotlightInput{
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-family: inherit;
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  #spotlightInput::placeholder{ color: rgba(255,255,255,0.35); }
+  .spotlight-results{
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 0.4rem 0;
+  }
+  .spotlight-results::-webkit-scrollbar{ width: 6px; }
+  .spotlight-results::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.15); border-radius: 3px; }
+  .spotlight-item{
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.5rem 1rem;
+    color: rgba(255,255,255,0.85);
+    text-decoration: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.08s ease;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+  }
+  .spotlight-item:hover,
+  .spotlight-item.focused{
+    background: rgba(10,132,255,0.9);
+    color: #fff;
+  }
+  .spotlight-item .si-icon{
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+  .spotlight-item .si-meta{
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.4);
+  }
+  .spotlight-item:hover .si-meta,
+  .spotlight-item.focused .si-meta{ color: rgba(255,255,255,0.7); }
+  .spotlight-empty{
+    padding: 1.5rem;
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 0.85rem;
+  }
+  .spotlight-kbd{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    margin-left: auto;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.35);
+  }
+  .spotlight-kbd kbd{
+    background: rgba(255,255,255,0.1);
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    font-family: 'Roboto Mono', monospace;
+  }
+
+  /* ===================== MISSION CONTROL ===================== */
+  #missionControl{
+    position: fixed;
+    inset: 0;
+    z-index: 85;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  #missionControl.active{
+    opacity: 1;
+    pointer-events: all;
+  }
+  .mc-bar{
+    display: flex;
+    gap: 1.2rem;
+    align-items: flex-end;
+  }
+  .mc-thumb{
+    width: 280px;
+    height: 180px;
+    border-radius: 10px;
+    background: var(--window-bg);
+    border: 1px solid var(--dock-border);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    transform: scale(0.9);
+    transition: transform 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s ease;
+  }
+  .mc-thumb:hover{
+    transform: scale(1);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+  }
+  .mc-thumb .mc-header{
+    height: 24px;
+    background: var(--window-header);
+    border-bottom: 1px solid var(--hair);
+    display: flex;
+    align-items: center;
+    padding: 0 0.5rem;
+    gap: 4px;
+  }
+  .mc-thumb .mc-header span{
+    width: 7px; height: 7px; border-radius: 50%; display: inline-block;
+  }
+  .mc-thumb .mc-label{
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    white-space: nowrap;
+  }
+  .mc-thumb .mc-preview{
+    padding: 0.4rem;
+    font-size: 0.55rem;
+    color: var(--ink-soft);
+    line-height: 1.4;
+    opacity: 0.7;
+  }
+  .mc-dock-hint{
+    color: rgba(255,255,255,0.5);
+    font-size: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  /* ===================== NOTIFICATION CENTER ===================== */
+  #notifCenter{
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 360px;
+    max-width: 85vw;
+    z-index: 80;
+    background: rgba(30,30,33,0.88);
+    backdrop-filter: blur(40px) saturate(1.4);
+    -webkit-backdrop-filter: blur(40px) saturate(1.4);
+    border-left: 1px solid rgba(255,255,255,0.08);
+    box-shadow: -10px 0 40px rgba(0,0,0,0.3);
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #notifCenter.active{
+    transform: translateX(0);
+  }
+  .nc-header{
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nc-header h3{
+    margin: 0;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .nc-close{
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.2rem;
+    line-height: 1;
+    transition: color 0.12s ease;
+  }
+  .nc-close:hover{ color: #fff; }
+  .nc-content{
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.8rem;
+  }
+  .nc-content::-webkit-scrollbar{ width: 6px; }
+  .nc-content::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.12); border-radius: 3px; }
+  .nc-widget{
+    background: rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .nc-widget h4{
+    margin: 0 0 0.4rem;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+  .nc-widget p{
+    margin: 0;
+    color: rgba(255,255,255,0.85);
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  .nc-widget .nc-time{
+    color: rgba(255,255,255,0.35);
+    font-size: 0.72rem;
+    margin-top: 0.3rem;
+  }
+  .nc-weather{
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .nc-weather .temp{
+    font-size: 2.2rem;
+    font-weight: 300;
+    color: #fff;
+  }
+  .nc-weather .cond{
+    color: rgba(255,255,255,0.6);
+    font-size: 0.85rem;
+  }
+  .nc-weather .loc{
+    color: rgba(255,255,255,0.4);
+    font-size: 0.75rem;
+  }
+
+  /* ===================== CONTEXT MENU ===================== */
+  #contextMenu{
+    position: fixed;
+    z-index: 95;
+    background: rgba(40,40,44,0.92);
+    backdrop-filter: blur(30px) saturate(1.4);
+    -webkit-backdrop-filter: blur(30px) saturate(1.4);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+    padding: 0.3rem 0;
+    min-width: 180px;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+    transform-origin: top left;
+    transition: opacity 0.1s ease, transform 0.1s ease;
+  }
+  #contextMenu.active{
+    opacity: 1;
+    pointer-events: all;
+    transform: scale(1);
+  }
+  .ctx-item{
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.35rem 0.8rem;
+    color: rgba(255,255,255,0.9);
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    transition: background 0.06s ease;
+  }
+  .ctx-item:hover{
+    background: rgba(10,132,255,0.9);
+    color: #fff;
+  }
+  .ctx-item .ctx-shortcut{
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.35);
+    font-family: 'Roboto Mono', monospace;
+  }
+  .ctx-item:hover .ctx-shortcut{ color: rgba(255,255,255,0.7); }
+  .ctx-sep{
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 0.25rem 0.5rem;
+  }
+  .ctx-disabled{
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  /* Notif center toggle in menubar */
+  .menubar-right .notif-toggle{
+    cursor: pointer;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    transition: background 0.12s ease;
+  }
+  .menubar-right .notif-toggle:hover{
+    background: rgba(0,0,0,0.06);
+  }
+  @media (prefers-color-scheme: dark){
+    .menubar-right .notif-toggle:hover{
+      background: rgba(255,255,255,0.1);
+    }
+  }
+
+  /* Mission Control dock item indicator */
+  .dock-item.mission-control{
+    background: linear-gradient(160deg, #5a5a5a, #3a3a3a);
+  }
 </style>
 </head>
 <body class="booting">
 
 <div id="bootScreen" aria-hidden="true">
-  <div class="boot-mark">IS</div>
-  <div class="boot-bar"><div class="boot-bar-fill"></div></div>
+  <div class="boot-content">
+    <div class="boot-avatar">IS</div>
+    <div class="boot-name">Ivan Solano</div>
+    <div class="boot-bar"><div class="boot-bar-fill"></div></div>
+  </div>
 </div>
 
 <div class="menubar">
@@ -562,6 +1237,9 @@
   </div>
   <div class="menubar-right">
     <span class="loc-text">Bucaramanga, CO</span>
+    <span class="notif-toggle" id="notifToggle" title="Notification Center" aria-label="Open Notification Center">
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" style="display:block;"><path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6"/></svg>
+    </span>
     <span id="clock"></span>
   </div>
 </div>
@@ -683,9 +1361,22 @@
       <div class="traffic"><span class="r"></span><span class="y"></span><span class="g"></span></div>
       <p class="window-title">Links — Finder</p>
     </div>
-    <div class="finder-cols">
-      <span>Name</span><span>Kind</span><span>Comment</span>
-    </div>
+    <div class="links-body">
+      <nav class="finder-sidebar" aria-label="Finder sidebar">
+        <h4>Favorites</h4>
+        <a href="#" class="active"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" style="opacity:.7;"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/></svg> All Links</a>
+        <a href="https://instagram.com/ivan.sln" target="_blank" rel="noopener"><span style="width:12px;text-align:center;display:inline-block;">📷</span> Instagram</a>
+        <a href="https://x.com/ivxnchis" target="_blank" rel="noopener"><span style="width:12px;text-align:center;display:inline-block;">🐦</span> X</a>
+        <a href="https://www.tiktok.com/@ivxnchis" target="_blank" rel="noopener"><span style="width:12px;text-align:center;display:inline-block;">🎵</span> TikTok</a>
+        <h4>Connect</h4>
+        <a href="https://discordapp.com/users/IVXNCHIS#2307" target="_blank" rel="noopener"><span style="width:12px;text-align:center;display:inline-block;">💬</span> Discord</a>
+        <a href="https://wa.link/rcedvv" target="_blank" rel="noopener"><span style="width:12px;text-align:center;display:inline-block;">💬</span> WhatsApp</a>
+        <a href="mailto:reach@ivxnchis.com"><span style="width:12px;text-align:center;display:inline-block;">✉️</span> Email</a>
+      </nav>
+      <div class="links-content">
+        <div class="finder-cols">
+          <span>Name</span><span>Kind</span><span>Comment</span>
+        </div>
     <ul class="finder-list">
       <li><a class="finder-row" href="https://instagram.com/ivan.sln" target="_blank" rel="noopener">
         <span class="finder-name"><span class="finder-icon ig"><svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334"/></svg></span>Instagram</span>
@@ -723,6 +1414,8 @@
         <span class="finder-date">Message me</span>
       </a></li>
     </ul>
+      </div>
+    </div>
     <div class="resize-handle" aria-hidden="true"></div>
   </section>
 
@@ -747,6 +1440,10 @@
 
 <div class="dock-wrap">
   <nav class="dock" aria-label="Quick links dock">
+    <button class="dock-item mission-control" id="mcBtn" data-label="Mission Control" type="button" aria-label="Mission Control">
+      <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5zm0 6A1.5 1.5 0 0 1 2.5 7h3A1.5 1.5 0 0 1 7 8.5v3A1.5 1.5 0 0 1 5.5 13h-3A1.5 1.5 0 0 1 1 11.5zm6-6A1.5 1.5 0 0 1 8.5 1h3A1.5 1.5 0 0 1 13 2.5v3A1.5 1.5 0 0 1 11.5 7h-3A1.5 1.5 0 0 1 7 5.5zm0 6A1.5 1.5 0 0 1 8.5 7h3A1.5 1.5 0 0 1 13 8.5v3A1.5 1.5 0 0 1 11.5 13h-3A1.5 1.5 0 0 1 7 11.5z"/></svg>
+    </button>
+    <span class="dock-sep" aria-hidden="true"></span>
     <a class="dock-item about" href="/about" data-label="About"><svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2 1H6a5 5 0 0 0-5 5 1 1 0 0 0 1 1h12a1 1 0 0 0 1-1 5 5 0 0 0-5-5"/></svg></a>
     <span class="dock-sep" aria-hidden="true"></span>
     <a class="dock-item ig" href="https://instagram.com/ivan.sln" target="_blank" rel="noopener" data-label="Instagram"><svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor"><path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334"/></svg></a>
@@ -797,6 +1494,7 @@
       zCounter++;
       win.style.zIndex = zCounter;
     }
+    window.bringToFront = bringToFront; // shared with Spotlight, Mission Control, and the context menu
 
     function updateCanvasHeight(){
       if(!desktopModeActive) return;
@@ -954,6 +1652,17 @@
         if(desktopModeActive) layoutWindows();
       });
     }
+
+    /* Active window tracking for dimming effect */
+    windows.forEach(function(w){
+      w.addEventListener('pointerdown', function(){
+        if(!desktopModeActive) return;
+        windows.forEach(function(other){
+          if(other !== w) other.classList.remove('window-active');
+        });
+        w.classList.add('window-active');
+      });
+    });
   })();
 
   var shareBtn = document.getElementById('shareBtn');
@@ -996,7 +1705,376 @@
     // fallback in case load already fired or is slow to trigger
     setTimeout(reveal, 2800);
   }
+
+
+  /* ===================== SPOTLIGHT SEARCH ===================== */
+  (function(){
+    var spotlight = document.getElementById('spotlight');
+    var input = document.getElementById('spotlightInput');
+    var results = document.getElementById('spotlightResults');
+    var focusedIndex = -1;
+
+    var items = [
+      { name: 'Resume.pdf', icon: '📄', meta: 'Preview', action: function(){ focusWindow('resume'); }, keywords: 'resume cv work experience' },
+      { name: 'Links', icon: '📁', meta: 'Finder', action: function(){ focusWindow('links'); }, keywords: 'links social media finder' },
+      { name: 'Contact', icon: '📝', meta: 'Notes', action: function(){ focusWindow('contact'); }, keywords: 'contact email phone' },
+      { name: 'Instagram', icon: '📷', meta: 'Profile', action: function(){ window.open('https://instagram.com/ivan.sln','_blank'); }, keywords: 'instagram ig social photo' },
+      { name: 'X / Twitter', icon: '🐦', meta: 'Profile', action: function(){ window.open('https://x.com/ivxnchis','_blank'); }, keywords: 'twitter x social tweet' },
+      { name: 'TikTok', icon: '🎵', meta: 'Profile', action: function(){ window.open('https://www.tiktok.com/@ivxnchis','_blank'); }, keywords: 'tiktok video social' },
+      { name: 'Discord', icon: '💬', meta: 'Server', action: function(){ window.open('https://discordapp.com/users/IVXNCHIS#2307','_blank'); }, keywords: 'discord chat' },
+      { name: 'Spotify', icon: '🎧', meta: 'Playlist', action: function(){ window.open('https://open.spotify.com/user/ivansolanoc','_blank'); }, keywords: 'spotify music playlist' },
+      { name: 'Letterboxd', icon: '🎬', meta: 'Film log', action: function(){ window.open('https://letterboxd.com/IVXNCHIS','_blank'); }, keywords: 'letterboxd film movie review' },
+      { name: 'WhatsApp', icon: '💬', meta: 'Chat', action: function(){ window.open('https://wa.link/rcedvv','_blank'); }, keywords: 'whatsapp message chat' },
+      { name: 'Email', icon: '✉️', meta: 'Mail', action: function(){ window.location.href='mailto:reach@ivxnchis.com'; }, keywords: 'email mail contact' },
+      { name: 'Mission Control', icon: '🪟', meta: 'Windows', action: function(){ openMissionControl(); }, keywords: 'mission control windows overview' },
+      { name: 'Notification Center', icon: '🔔', meta: 'Notifications', action: function(){ document.getElementById('notifCenter').classList.add('active'); }, keywords: 'notifications widget' },
+    ];
+
+    function focusWindow(id){
+      closeSpotlight();
+      var el = document.getElementById(id);
+      if(!el) return;
+      if(document.body.classList.contains('desktop-mode')){
+        bringToFront(el);
+        el.classList.add('window-active');
+        document.querySelectorAll('.window').forEach(function(w){ if(w!==el) w.classList.remove('window-active'); });
+      } else {
+        el.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+    }
+
+    function render(query){
+      var q = query.toLowerCase().trim();
+      var filtered = q ? items.filter(function(it){
+        return it.name.toLowerCase().includes(q) || it.keywords.toLowerCase().includes(q);
+      }) : items.slice(0, 6);
+
+      if(!filtered.length){
+        results.innerHTML = '<div class="spotlight-empty">No results found</div>';
+        focusedIndex = -1;
+        return;
+      }
+
+      results.innerHTML = filtered.map(function(it, i){
+        return '<button class="spotlight-item' + (i===0 ? ' focused' : '') + '" data-index="' + i + '">' +
+          '<span class="si-icon" style="background:linear-gradient(135deg,#7c8cff,#ff9ac3);">' + it.icon + '</span>' +
+          '<span>' + it.name + '</span>' +
+          '<span class="si-meta">' + it.meta + '</span>' +
+          '</button>';
+      }).join('');
+      focusedIndex = 0;
+
+      results.querySelectorAll('.spotlight-item').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var idx = parseInt(btn.dataset.index);
+          filtered[idx].action();
+        });
+      });
+    }
+
+    function openSpotlight(){
+      spotlight.classList.add('active');
+      input.value = '';
+      input.focus();
+      render('');
+    }
+
+    function closeSpotlight(){
+      spotlight.classList.remove('active');
+      input.blur();
+    }
+
+    document.addEventListener('keydown', function(e){
+      // Cmd+Space or Cmd+K
+      if((e.metaKey || e.ctrlKey) && (e.code === 'Space' || e.key === 'k' || e.key === 'K')){
+        e.preventDefault();
+        if(spotlight.classList.contains('active')){ closeSpotlight(); }
+        else { openSpotlight(); }
+      }
+      if(e.key === 'Escape' && spotlight.classList.contains('active')){
+        e.preventDefault();
+        closeSpotlight();
+      }
+      if(!spotlight.classList.contains('active')) return;
+
+      var btns = results.querySelectorAll('.spotlight-item');
+      if(e.key === 'ArrowDown'){
+        e.preventDefault();
+        focusedIndex = Math.min(focusedIndex + 1, btns.length - 1);
+        updateFocus(btns);
+      }
+      if(e.key === 'ArrowUp'){
+        e.preventDefault();
+        focusedIndex = Math.max(focusedIndex - 1, 0);
+        updateFocus(btns);
+      }
+      if(e.key === 'Enter' && btns[focusedIndex]){
+        e.preventDefault();
+        btns[focusedIndex].click();
+      }
+    });
+
+    function updateFocus(btns){
+      btns.forEach(function(b, i){ b.classList.toggle('focused', i === focusedIndex); });
+      if(btns[focusedIndex]) btns[focusedIndex].scrollIntoView({block:'nearest'});
+    }
+
+    input.addEventListener('input', function(){ render(input.value); });
+
+    spotlight.addEventListener('click', function(e){
+      if(e.target === spotlight) closeSpotlight();
+    });
+
+    window.openSpotlight = openSpotlight;
+    window.closeSpotlight = closeSpotlight;
+  })();
+
+  /* ===================== MISSION CONTROL ===================== */
+  (function(){
+    var mc = document.getElementById('missionControl');
+    var mcBar = document.getElementById('mcBar');
+    var mcOpen = false;
+
+    function buildThumbs(){
+      mcBar.innerHTML = '';
+      var wins = document.querySelectorAll('main .window');
+      wins.forEach(function(w){
+        var title = w.querySelector('.window-title')?.textContent || 'Window';
+        var id = w.id;
+        var thumb = document.createElement('div');
+        thumb.className = 'mc-thumb';
+        thumb.innerHTML =
+          '<div class="mc-header"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div>' +
+          '<div class="mc-preview" style="padding:0.6rem;">' +
+          '<div style="font-weight:600;font-size:0.6rem;margin-bottom:0.3rem;">' + title + '</div>' +
+          '<div style="opacity:0.5;">' + (w.querySelector('.doc-page') ? 'Document preview...' : 'List view...') + '</div>' +
+          '</div>' +
+          '<span class="mc-label">' + title + '</span>';
+        thumb.addEventListener('click', function(){
+          closeMissionControl();
+          if(document.body.classList.contains('desktop-mode')){
+            bringToFront(w);
+            w.classList.add('window-active');
+            document.querySelectorAll('.window').forEach(function(other){ if(other!==w) other.classList.remove('window-active'); });
+          } else {
+            w.scrollIntoView({behavior:'smooth', block:'start'});
+          }
+        });
+        mcBar.appendChild(thumb);
+      });
+    }
+
+    window.openMissionControl = function(){
+      buildThumbs();
+      mc.classList.add('active');
+      mcOpen = true;
+    };
+
+    window.closeMissionControl = function(){
+      mc.classList.remove('active');
+      mcOpen = false;
+    };
+
+    document.getElementById('mcBtn').addEventListener('click', function(e){
+      e.preventDefault();
+      if(mcOpen) closeMissionControl();
+      else openMissionControl();
+    });
+
+    mc.addEventListener('click', function(e){
+      if(e.target === mc || e.target.classList.contains('mc-dock-hint')) closeMissionControl();
+    });
+
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && mcOpen){
+        e.preventDefault();
+        closeMissionControl();
+      }
+      // Ctrl+Up for Mission Control
+      if(e.ctrlKey && e.key === 'ArrowUp'){
+        e.preventDefault();
+        if(mcOpen) closeMissionControl();
+        else openMissionControl();
+      }
+    });
+  })();
+
+  /* ===================== NOTIFICATION CENTER ===================== */
+  (function(){
+    var nc = document.getElementById('notifCenter');
+    var toggle = document.getElementById('notifToggle');
+    var closeBtn = document.getElementById('ncClose');
+
+    toggle.addEventListener('click', function(){
+      nc.classList.toggle('active');
+    });
+
+    closeBtn.addEventListener('click', function(){
+      nc.classList.remove('active');
+    });
+
+    document.addEventListener('click', function(e){
+      if(nc.classList.contains('active') && !nc.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)){
+        nc.classList.remove('active');
+      }
+    });
+
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && nc.classList.contains('active')){
+        nc.classList.remove('active');
+      }
+    });
+  })();
+
+  /* ===================== CONTEXT MENU ===================== */
+  (function(){
+    var menu = document.getElementById('contextMenu');
+    var menuOpen = false;
+
+    function showMenu(x, y){
+      menu.style.left = x + 'px';
+      menu.style.top = y + 'px';
+      menu.classList.add('active');
+      menu.setAttribute('aria-hidden', 'false');
+      menuOpen = true;
+
+      // Keep inside viewport
+      requestAnimationFrame(function(){
+        var rect = menu.getBoundingClientRect();
+        if(rect.right > window.innerWidth) menu.style.left = (window.innerWidth - rect.width - 8) + 'px';
+        if(rect.bottom > window.innerHeight) menu.style.top = (window.innerHeight - rect.height - 8) + 'px';
+      });
+    }
+
+    function hideMenu(){
+      menu.classList.remove('active');
+      menu.setAttribute('aria-hidden', 'true');
+      menuOpen = false;
+    }
+
+    document.addEventListener('contextmenu', function(e){
+      // Don't show on interactive elements
+      var tag = e.target.tagName.toLowerCase();
+      var isInteractive = tag === 'a' || tag === 'button' || tag === 'input' || tag === 'textarea' || e.target.closest('a') || e.target.closest('button');
+      if(isInteractive) return; // let default context menu show on links/buttons
+      e.preventDefault();
+      showMenu(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('click', function(e){
+      if(menuOpen && !menu.contains(e.target)) hideMenu();
+    });
+
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && menuOpen) hideMenu();
+    });
+
+    // Menu actions
+    menu.querySelectorAll('.ctx-item').forEach(function(item){
+      item.addEventListener('click', function(){
+        var action = item.dataset.action;
+        hideMenu();
+        switch(action){
+          case 'refresh': location.reload(); break;
+          case 'spotlight': window.openSpotlight && window.openSpotlight(); break;
+          case 'mission': window.openMissionControl && window.openMissionControl(); break;
+          case 'notif': document.getElementById('notifCenter').classList.add('active'); break;
+          case 'resume':
+            var r = document.getElementById('resume');
+            if(r) { if(document.body.classList.contains('desktop-mode')){ bringToFront(r); r.classList.add('window-active'); } else r.scrollIntoView({behavior:'smooth'}); }
+            break;
+          case 'links':
+            var l = document.getElementById('links');
+            if(l) { if(document.body.classList.contains('desktop-mode')){ bringToFront(l); l.classList.add('window-active'); } else l.scrollIntoView({behavior:'smooth'}); }
+            break;
+          case 'contact':
+            var c = document.getElementById('contact');
+            if(c) { if(document.body.classList.contains('desktop-mode')){ bringToFront(c); c.classList.add('window-active'); } else c.scrollIntoView({behavior:'smooth'}); }
+            break;
+          case 'darkmode':
+            // Toggle a class that inverts the color scheme
+            document.documentElement.classList.toggle('force-dark');
+            break;
+        }
+      });
+    });
+  })();
+
 </script>
+
+
+<!-- Spotlight Search -->
+<div id="spotlight" aria-hidden="true">
+  <div class="spotlight-box">
+    <div class="spotlight-input-wrap">
+      <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg>
+      <input type="text" id="spotlightInput" placeholder="Spotlight Search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <span class="spotlight-kbd"><kbd>esc</kbd> to close</span>
+    </div>
+    <div class="spotlight-results" id="spotlightResults"></div>
+  </div>
+</div>
+
+<!-- Mission Control -->
+<div id="missionControl" aria-hidden="true">
+  <div class="mc-bar" id="mcBar"></div>
+  <p class="mc-dock-hint">Click a window to focus it</p>
+</div>
+
+<!-- Notification Center -->
+<aside id="notifCenter" aria-hidden="true" aria-label="Notification Center">
+  <div class="nc-header">
+    <h3>Notification Center</h3>
+    <button class="nc-close" id="ncClose" aria-label="Close Notification Center">×</button>
+  </div>
+  <div class="nc-content">
+    <div class="nc-widget">
+      <div class="nc-weather">
+        <div>
+          <div class="temp">24°</div>
+          <div class="loc">Bucaramanga, CO</div>
+        </div>
+        <div>
+          <div class="cond">⛅ Partly Cloudy</div>
+          <div class="cond">H:28° L:19°</div>
+        </div>
+      </div>
+    </div>
+    <div class="nc-widget">
+      <h4>Now</h4>
+      <p>🟢 Open to opportunities</p>
+      <div class="nc-time">Customer Service Supervisor</div>
+    </div>
+    <div class="nc-widget">
+      <h4>Recent</h4>
+      <p>📄 Resume updated</p>
+      <div class="nc-time">2 days ago</div>
+    </div>
+    <div class="nc-widget">
+      <h4>Quick Actions</h4>
+      <p style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.3rem;">
+        <button class="chip" onclick="document.getElementById('notifCenter').classList.remove('active');document.getElementById('spotlight').classList.add('active');document.getElementById('spotlightInput').focus();" style="cursor:pointer;border:none;font-family:inherit;">🔍 Spotlight</button>
+        <button class="chip" onclick="document.getElementById('notifCenter').classList.remove('active');document.getElementById('missionControl').classList.add('active');" style="cursor:pointer;border:none;font-family:inherit;">🪟 Mission Control</button>
+        <button class="chip" onclick="window.open('mailto:reach@ivxnchis.com','_blank')" style="cursor:pointer;border:none;font-family:inherit;">✉️ Email</button>
+      </p>
+    </div>
+  </div>
+</aside>
+
+<!-- Context Menu -->
+<div id="contextMenu" aria-hidden="true">
+  <button class="ctx-item" data-action="refresh">🔄 Refresh <span class="ctx-shortcut">⌘R</span></button>
+  <div class="ctx-sep"></div>
+  <button class="ctx-item" data-action="spotlight">🔍 Spotlight Search <span class="ctx-shortcut">⌘␣</span></button>
+  <button class="ctx-item" data-action="mission">🪟 Mission Control <span class="ctx-shortcut">⌃↑</span></button>
+  <button class="ctx-item" data-action="notif">🔔 Notification Center <span class="ctx-shortcut"></span></button>
+  <div class="ctx-sep"></div>
+  <button class="ctx-item" data-action="resume">📄 Open Resume <span class="ctx-shortcut"></span></button>
+  <button class="ctx-item" data-action="links">📁 Open Links <span class="ctx-shortcut"></span></button>
+  <button class="ctx-item" data-action="contact">📝 Open Contact <span class="ctx-shortcut"></span></button>
+  <div class="ctx-sep"></div>
+  <button class="ctx-item" data-action="darkmode">🌙 Toggle Dark Mode <span class="ctx-shortcut"></span></button>
+</div>
 
 </body>
 </html>
