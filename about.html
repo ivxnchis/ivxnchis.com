@@ -382,202 +382,6 @@
     font-size:0.8rem;
     padding-bottom:2rem;
   }
-
-  /* Manual override for dark mode toggle */
-  html.force-dark{
-    --menubar-bg: rgba(28,28,30,0.7);
-    --window-bg: rgba(30,30,33,0.82);
-    --window-header: rgba(40,40,44,0.92);
-    --dock-bg: rgba(30,30,33,0.6);
-    --dock-border: rgba(255,255,255,0.14);
-    --ink: #f5f5f7;
-    --ink-soft: #9a9aa0;
-    --hair: rgba(255,255,255,0.1);
-    --accent: #0a84ff;
-    --accent-soft: rgba(10,132,255,0.18);
-  }
-
-  /* ===================== PAGE TRANSITIONS ===================== */
-  #pageTransition{
-    position: fixed;
-    inset: 0;
-    z-index: 99;
-    pointer-events: none;
-    opacity: 0;
-  }
-  #pageTransition.active{
-    pointer-events: all;
-    opacity: 1;
-  }
-  .pt-layer{
-    position: absolute;
-    inset: 0;
-  }
-  .pt-windows{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 2rem;
-    opacity: 0;
-  }
-  .pt-window{
-    background: var(--window-bg);
-    backdrop-filter: blur(24px) saturate(1.4);
-    -webkit-backdrop-filter: blur(24px) saturate(1.4);
-    border-radius: 14px;
-    border: 1px solid var(--dock-border);
-    box-shadow: 0 30px 60px -20px rgba(30,30,50,0.28);
-    overflow: hidden;
-    width: 320px;
-    height: 220px;
-    transform-origin: center center;
-    transition: none;
-  }
-  .pt-window .pt-header{
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-    height: 44px;
-    padding: 0 1rem;
-    background: var(--window-header);
-    border-bottom: 1px solid var(--hair);
-  }
-  .pt-window .pt-title{
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--ink-soft);
-    margin: 0 auto;
-    transform: translateX(-18px);
-  }
-  .pt-window .pt-body{
-    padding: 1rem;
-    opacity: 0.6;
-  }
-  .pt-newpage{
-    background: linear-gradient(180deg,
-      #1f3868 0%, #3f5f9c 18%, #6c8fc4 34%, #a9bfd9 50%,
-      #d3dcd8 64%, #b9d3bd 82%, #a4cbae 100%);
-    background-attachment: fixed;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transform: scale(1.05);
-  }
-  .pt-newpage .pt-avatar{
-    width: 80px; height: 80px;
-    border-radius: 24px;
-    background: linear-gradient(135deg, #7c8cff, #ff9ac3);
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 1.5rem; color: #fff;
-    box-shadow: 0 16px 34px rgba(87, 91, 214, 0.28);
-    margin-bottom: 1rem;
-  }
-  .pt-newpage .pt-name{
-    color: #fff;
-    font-size: 1.2rem;
-    font-weight: 600;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  }
-
-  @keyframes pt-minimize{
-    0%{
-      transform: scale(1) translateY(0);
-      opacity: 1;
-    }
-    40%{
-      transform: scale(0.85) translateY(20px);
-      opacity: 0.9;
-    }
-    100%{
-      transform: scale(0.08) translateY(60vh);
-      opacity: 0;
-    }
-  }
-  @keyframes pt-fadein{
-    0%{ opacity: 0; transform: scale(1.05); }
-    100%{ opacity: 1; transform: scale(1); }
-  }
-  @keyframes pt-fadeout{
-    0%{ opacity: 1; transform: scale(1); }
-    100%{ opacity: 0; transform: scale(0.95); }
-  }
-  @keyframes pt-windows-in{
-    0%{ transform: scale(0.1) translateY(60vh); opacity: 0; }
-    60%{ transform: scale(0.9) translateY(-10px); opacity: 0.9; }
-    100%{ transform: scale(1) translateY(0); opacity: 1; }
-  }
-  .pt-window.anim-out{
-    animation: pt-minimize 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  }
-  .pt-window.anim-in{
-    animation: pt-windows-in 0.55s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
-  }
-  .pt-newpage.anim-in{
-    animation: pt-fadein 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
-  }
-  .pt-newpage.anim-out{
-    animation: pt-fadeout 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-
-  @keyframes dock-bounce-out{
-    0%{ transform: translateY(0) scale(1); }
-    30%{ transform: translateY(-18px) scale(1.12); }
-    60%{ transform: translateY(4px) scale(0.95); }
-    100%{ transform: translateY(0) scale(1); }
-  }
-  .dock-item.pt-bounce{
-    animation: dock-bounce-out 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
-  }
-
-  /* Context menu for about page */
-  #contextMenu{
-    position: fixed;
-    z-index: 95;
-    background: rgba(40,40,44,0.92);
-    backdrop-filter: blur(30px) saturate(1.4);
-    -webkit-backdrop-filter: blur(30px) saturate(1.4);
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.35);
-    padding: 0.3rem 0;
-    min-width: 180px;
-    opacity: 0;
-    pointer-events: none;
-    transform: scale(0.95);
-    transform-origin: top left;
-    transition: opacity 0.1s ease, transform 0.1s ease;
-  }
-  #contextMenu.active{
-    opacity: 1;
-    pointer-events: all;
-    transform: scale(1);
-  }
-  .ctx-item{
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.35rem 0.8rem;
-    color: rgba(255,255,255,0.9);
-    font-size: 0.85rem;
-    cursor: pointer;
-    border: none;
-    background: none;
-    width: 100%;
-    text-align: left;
-    font-family: inherit;
-    transition: background 0.06s ease;
-  }
-  .ctx-item:hover{
-    background: rgba(10,132,255,0.9);
-    color: #fff;
-  }
-  .ctx-sep{
-    height: 1px;
-    background: rgba(255,255,255,0.08);
-    margin: 0.25rem 0.5rem;
-  }
 </style>
 </head>
 <body>
@@ -696,198 +500,70 @@
   updateClock();
   setInterval(updateClock, 15000);
 
+  /* ---------------- Genie transition to/from the Dock ---------------- */
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ===================== PAGE TRANSITIONS ===================== */
-  (function(){
-    var pt = document.getElementById('pageTransition');
-    var ptWindows = document.getElementById('ptWindows');
-    var ptNewpage = document.getElementById('ptNewpage');
-    var isTransitioning = false;
+  function genieCollapseInto(iconEl, pieces, onDone){
+    var r = iconEl.getBoundingClientRect();
+    var tx = r.left + r.width / 2, ty = r.top + r.height / 2;
+    pieces.forEach(function(el){
+      var er = el.getBoundingClientRect();
+      var dx = tx - (er.left + er.width / 2);
+      var dy = ty - (er.top + er.height / 2);
+      el.style.transition = 'transform 0.38s cubic-bezier(0.4,0,0.65,1), opacity 0.32s ease';
+      el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(0.04)';
+      el.style.opacity = '0';
+    });
+    setTimeout(onDone, 380);
+  }
 
-    function cloneWindows(){
-      ptWindows.innerHTML = '';
-      // Create "ghost" windows representing the home page
-      var ghostWindows = [
-        {title: 'Resume.pdf — Preview', width: 320, height: 220},
-        {title: 'Links — Finder', width: 280, height: 200},
-        {title: 'Contact — Notes', width: 260, height: 180}
-      ];
-      ghostWindows.forEach(function(gw, i){
-        var clone = document.createElement('div');
-        clone.className = 'pt-window';
-        clone.style.width = gw.width + 'px';
-        clone.style.height = gw.height + 'px';
-        clone.innerHTML =
-          '<div class="pt-header">' +
-          '<div class="traffic"><span class="r"></span><span class="y"></span><span class="g"></span></div>' +
-          '<p class="pt-title">' + gw.title + '</p>' +
-          '</div>' +
-          '<div class="pt-body">' +
-          '<div style="height:8px;background:var(--hair);border-radius:4px;margin-bottom:8px;width:70%;"></div>' +
-          '<div style="height:8px;background:var(--hair);border-radius:4px;margin-bottom:8px;width:90%;"></div>' +
-          '<div style="height:8px;background:var(--hair);border-radius:4px;width:60%;"></div>' +
-          '</div>';
-        ptWindows.appendChild(clone);
-      });
-    }
-
-    // ARRIVAL: coming from index.html
-    var incoming = sessionStorage.getItem('pt_target');
-    if(incoming){
-      sessionStorage.removeItem('pt_target');
-      var data = JSON.parse(incoming);
-
-      // Show the "preview" layer immediately
-      pt.classList.add('active');
-      ptNewpage.style.opacity = '1';
-      ptNewpage.style.transform = 'scale(1)';
-      ptWindows.style.opacity = '0';
-
-      // Fade out overlay to reveal real content
+  function genieExpandFrom(iconEl, pieces){
+    var r = iconEl.getBoundingClientRect();
+    var ox = r.left + r.width / 2, oy = r.top + r.height / 2;
+    pieces.forEach(function(el){
+      var er = el.getBoundingClientRect();
+      var dx = ox - (er.left + er.width / 2);
+      var dy = oy - (er.top + er.height / 2);
+      el.style.transition = 'none';
+      el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(0.04)';
+      el.style.opacity = '0';
+    });
+    requestAnimationFrame(function(){
       requestAnimationFrame(function(){
-        pt.style.transition = 'opacity 0.5s cubic-bezier(0.22,1,0.36,1)';
-        pt.style.opacity = '0';
-        setTimeout(function(){
-          pt.classList.remove('active');
-          pt.style.opacity = '';
-          pt.style.transition = '';
-          ptNewpage.style.opacity = '';
-          ptNewpage.style.transform = '';
-          ptWindows.style.opacity = '';
-        }, 520);
+        pieces.forEach(function(el){
+          el.style.transition = 'transform 0.42s cubic-bezier(0.16,1,0.3,1), opacity 0.32s ease';
+          el.style.transform = '';
+          el.style.opacity = '';
+        });
       });
-    }
+    });
+  }
 
-    // DEPARTURE: going back to index.html
-    function animateBack(){
-      if(isTransitioning) return;
-      isTransitioning = true;
+  var homeDockIcon = document.querySelector('.dock-item.home');
 
-      sessionStorage.setItem('pt_incoming', JSON.stringify({
-        from: '/about',
-        to: '/'
-      }));
-
-      // Show overlay with current page preview
-      pt.classList.add('active');
-      ptNewpage.style.opacity = '1';
-      ptNewpage.style.transform = 'scale(1)';
-
-      // Fade out the preview
-      ptNewpage.classList.add('anim-out');
-
-      // Prepare windows to animate IN
-      cloneWindows();
-      ptWindows.style.opacity = '1';
-
-      // Animate windows in with stagger (reverse of minimize)
-      var clones = ptWindows.querySelectorAll('.pt-window');
-      clones.forEach(function(c, i){
-        setTimeout(function(){
-          c.classList.add('anim-in');
-        }, 200 + (clones.length - 1 - i) * 80);
-      });
-
-      // Navigate after animation
-      setTimeout(function(){
-        window.location.href = '/';
-      }, 900);
-    }
-
-    // Hook the Home dock item
-    var homeDock = document.querySelector('.dock-item.home');
-    if(homeDock){
-      homeDock.addEventListener('click', function(e){
-        if(homeDock.getAttribute('href') === '/'){
-          e.preventDefault();
-          // Bounce the home icon
-          homeDock.classList.add('pt-bounce');
-          setTimeout(function(){ homeDock.classList.remove('pt-bounce'); }, 600);
-          animateBack();
-        }
-      });
-    }
-
-    // Hook the back link
-    var backLink = document.querySelector('.back-link');
-    if(backLink){
-      backLink.addEventListener('click', function(e){
-        e.preventDefault();
-        animateBack();
-      });
-    }
-
-    window.ptNavigateBack = animateBack;
-  })();
-
-  /* ===================== CONTEXT MENU ===================== */
-  (function(){
-    var menu = document.getElementById('contextMenu');
-    var menuOpen = false;
-
-    function showMenu(x, y){
-      menu.style.left = x + 'px';
-      menu.style.top = y + 'px';
-      menu.classList.add('active');
-      menu.setAttribute('aria-hidden', 'false');
-      menuOpen = true;
-      requestAnimationFrame(function(){
-        var rect = menu.getBoundingClientRect();
-        if(rect.right > window.innerWidth) menu.style.left = (window.innerWidth - rect.width - 8) + 'px';
-        if(rect.bottom > window.innerHeight) menu.style.top = (window.innerHeight - rect.height - 8) + 'px';
-      });
-    }
-    function hideMenu(){
-      menu.classList.remove('active');
-      menu.setAttribute('aria-hidden', 'true');
-      menuOpen = false;
-    }
-
-    document.addEventListener('contextmenu', function(e){
-      var tag = e.target.tagName.toLowerCase();
-      var isInteractive = tag === 'a' || tag === 'button' || tag === 'input' || tag === 'textarea' || e.target.closest('a') || e.target.closest('button');
-      if(isInteractive) return;
+  if(homeDockIcon){
+    homeDockIcon.addEventListener('click', function(e){
+      if(reduceMotion) return; // let it navigate normally
       e.preventDefault();
-      showMenu(e.clientX, e.clientY);
-    });
-    document.addEventListener('click', function(e){
-      if(menuOpen && !menu.contains(e.target)) hideMenu();
-    });
-    document.addEventListener('keydown', function(e){
-      if(e.key === 'Escape' && menuOpen) hideMenu();
-    });
-
-    menu.querySelectorAll('.ctx-item').forEach(function(item){
-      item.addEventListener('click', function(){
-        var action = item.dataset.action;
-        hideMenu();
-        if(action === 'refresh') location.reload();
-        if(action === 'home' && window.ptNavigateBack) window.ptNavigateBack();
-        if(action === 'darkmode') document.documentElement.classList.toggle('force-dark');
+      var href = homeDockIcon.getAttribute('href');
+      var pieces = Array.prototype.slice.call(document.querySelectorAll('main .window, .hero, .back-link'));
+      genieCollapseInto(homeDockIcon, pieces, function(){
+        sessionStorage.setItem('ivxNav', 'fromAbout');
+        window.location.href = href;
       });
     });
-  })();
+  }
 
+  if(!reduceMotion && sessionStorage.getItem('ivxNav') === 'fromIndex'){
+    sessionStorage.removeItem('ivxNav');
+    if(homeDockIcon){
+      var pieces = Array.prototype.slice.call(document.querySelectorAll('main .window, .hero, .back-link'));
+      genieExpandFrom(homeDockIcon, pieces);
+    }
+  } else {
+    sessionStorage.removeItem('ivxNav');
+  }
 </script>
-
-
-<!-- Page Transition Overlay -->
-<div id="pageTransition" aria-hidden="true">
-  <div class="pt-layer pt-windows" id="ptWindows"></div>
-  <div class="pt-layer pt-newpage" id="ptNewpage">
-    <div class="pt-avatar" id="ptAvatar">IS</div>
-    <div class="pt-name" id="ptName">IVXNCHIS</div>
-  </div>
-</div>
-
-<!-- Context Menu -->
-<div id="contextMenu" aria-hidden="true">
-  <button class="ctx-item" data-action="refresh">🔄 Refresh</button>
-  <div class="ctx-sep"></div>
-  <button class="ctx-item" data-action="home">🏠 Back to Home</button>
-  <div class="ctx-sep"></div>
-  <button class="ctx-item" data-action="darkmode">🌙 Toggle Dark Mode</button>
-</div>
 
 </body>
 </html>
