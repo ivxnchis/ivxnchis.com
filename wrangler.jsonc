@@ -2,6 +2,8 @@
   "name": "ivxnchis",
   "compatibility_date": "2026-07-19",
   "assets": {
-    "directory": "./"
+    // Only public/ is served, so repo files like this config stay private.
+    "directory": "./public",
+    "not_found_handling": "404-page"
   }
 }
