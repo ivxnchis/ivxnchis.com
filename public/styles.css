@@ -1,0 +1,400 @@
+/* Shared styles for every page on ivxnchis.com */
+
+/* ---------------- Theme tokens ----------------
+   Light by default. Dark comes from the system preference, unless the
+   visitor picked a theme (stored as <html data-theme="light|dark">). */
+:root{
+  color-scheme: light;
+  --menubar-bg: rgba(255,255,255,0.65);
+  --window-bg: rgba(255,255,255,0.82);
+  --window-header: rgba(246,246,248,0.9);
+  --dock-bg: rgba(255,255,255,0.55);
+  --dock-border: rgba(255,255,255,0.6);
+  --ink: #1d1d1f;
+  --ink-soft: #6e6e73;
+  --hair: rgba(0,0,0,0.08);
+  --accent: #0071e3;
+  --accent-soft: rgba(0,113,227,0.1);
+  --hover: rgba(0,0,0,0.06);
+  --sep: rgba(0,0,0,0.1);
+  --bevel: rgba(255,255,255,0.35);
+  --scroll-thumb: rgba(0,0,0,0.18);
+  --scroll-thumb-hover: rgba(0,0,0,0.3);
+  --sidebar-bg: rgba(0,0,0,0.02);
+  --red: #ff5f57;
+  --yellow: #febc2e;
+  --green: #28c840;
+  --status-green: #1a9e33;
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --menubar-bg: rgba(28,28,30,0.7);
+  --window-bg: rgba(30,30,33,0.82);
+  --window-header: rgba(40,40,44,0.92);
+  --dock-bg: rgba(30,30,33,0.6);
+  --dock-border: rgba(255,255,255,0.14);
+  --ink: #f5f5f7;
+  --ink-soft: #9a9aa0;
+  --hair: rgba(255,255,255,0.1);
+  --accent: #0a84ff;
+  --accent-soft: rgba(10,132,255,0.18);
+  --hover: rgba(255,255,255,0.1);
+  --sep: rgba(255,255,255,0.14);
+  --bevel: rgba(255,255,255,0.08);
+  --scroll-thumb: rgba(255,255,255,0.18);
+  --scroll-thumb-hover: rgba(255,255,255,0.3);
+  --sidebar-bg: rgba(255,255,255,0.03);
+  --status-green: #30d158;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --menubar-bg: rgba(28,28,30,0.7);
+    --window-bg: rgba(30,30,33,0.82);
+    --window-header: rgba(40,40,44,0.92);
+    --dock-bg: rgba(30,30,33,0.6);
+    --dock-border: rgba(255,255,255,0.14);
+    --ink: #f5f5f7;
+    --ink-soft: #9a9aa0;
+    --hair: rgba(255,255,255,0.1);
+    --accent: #0a84ff;
+    --accent-soft: rgba(10,132,255,0.18);
+    --hover: rgba(255,255,255,0.1);
+    --sep: rgba(255,255,255,0.14);
+    --bevel: rgba(255,255,255,0.08);
+    --scroll-thumb: rgba(255,255,255,0.18);
+    --scroll-thumb-hover: rgba(255,255,255,0.3);
+    --sidebar-bg: rgba(255,255,255,0.03);
+    --status-green: #30d158;
+  }
+}
+
+/* ---------------- Base ---------------- */
+*{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color:var(--ink);
+  background: linear-gradient(180deg,
+    #1f3868 0%,
+    #3f5f9c 18%,
+    #6c8fc4 34%,
+    #a9bfd9 50%,
+    #d3dcd8 64%,
+    #b9d3bd 82%,
+    #a4cbae 100%);
+  background-attachment: fixed;
+}
+
+::selection{ background: var(--accent); color:#fff; }
+a{ color:inherit; }
+a:focus-visible, button:focus-visible, input:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+  border-radius:4px;
+}
+.icon{ display:block; flex-shrink:0; fill:currentColor; }
+
+/* ---------------- Menu bar ---------------- */
+.menubar{
+  position:sticky;
+  top:0;
+  z-index:40;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 0.45rem 1rem;
+  background:var(--menubar-bg);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border-bottom:1px solid var(--hair);
+  font-size:0.82rem;
+  font-weight:500;
+}
+.menubar-left{ display:flex; align-items:center; gap:1.15rem; }
+.menubar-left .brand{ font-weight:700; }
+.menubar-left .brand a{ color:inherit; text-decoration:none; }
+.menubar-left .menu-item{ color: var(--ink-soft); display:none; }
+.menubar-left .menu-item,
+.menubar-left .brand{
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  cursor: default;
+  transition: background 0.12s ease;
+}
+.menubar-left .menu-item:hover,
+.menubar-left .brand:hover{ background: var(--hover); }
+.menubar-right{ display:flex; align-items:center; gap:0.7rem; color:var(--ink-soft); white-space:nowrap; }
+@media (min-width:640px){
+  .menubar-left .menu-item{ display:inline; }
+}
+@media (max-width:420px){
+  .menubar{ padding:0.45rem 0.75rem; font-size:0.74rem; }
+  .menubar-right{ gap:0.5rem; }
+  .menubar-right .loc-text{ display:none; }
+}
+
+/* ---------------- Hero ---------------- */
+.avatar-ring{
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 1.1rem;
+  background: linear-gradient(135deg, #7c8cff, #ff9ac3);
+  font-weight:800; color:#fff;
+  box-shadow: 0 16px 34px rgba(87, 91, 214, 0.28);
+}
+.hero h1{
+  font-weight:800;
+  letter-spacing:-0.02em;
+  margin:0 0 0.25rem;
+  color:#fff;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.25);
+}
+.hero .subtitle{ color:rgba(255,255,255,0.92); text-shadow: 0 1px 8px rgba(0,0,0,0.2); }
+
+/* ---------------- Window chrome ---------------- */
+.window{
+  background:var(--window-bg);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border-radius:14px;
+  border:1px solid var(--dock-border);
+  box-shadow:
+    0 0 0 0.5px rgba(0,0,0,0.05),
+    0 2px 8px rgba(0,0,0,0.04),
+    0 8px 24px rgba(0,0,0,0.08),
+    0 24px 60px -12px rgba(0,0,0,0.18);
+  margin-bottom: 2.6rem;
+  position:relative;
+}
+/* top bevel highlight */
+.window::before{
+  content: '';
+  position: absolute;
+  top: 0; left: 1px; right: 1px;
+  height: 1px;
+  background: var(--bevel);
+  border-radius: 14px 14px 0 0;
+  pointer-events: none;
+  z-index: 6;
+}
+/* macOS overlay-style scrollbar */
+.window::-webkit-scrollbar{ width: 8px; height: 8px; }
+.window::-webkit-scrollbar-track{ background: transparent; }
+.window::-webkit-scrollbar-thumb{
+  background: var(--scroll-thumb);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.window::-webkit-scrollbar-thumb:hover{ background: var(--scroll-thumb-hover); background-clip: padding-box; }
+.window::-webkit-scrollbar-corner{ background: transparent; }
+
+.window-header{
+  display:flex;
+  align-items:center;
+  gap:0.9rem;
+  padding:0.65rem 1rem;
+  background:var(--window-header);
+  border-bottom:1px solid var(--hair);
+}
+.traffic{ display:flex; gap:8px; }
+.traffic span{
+  position:relative;
+  width:12px; height:12px;
+  border-radius:50%;
+  display:inline-block;
+  box-shadow:
+    inset 0 0 0 0.5px rgba(0,0,0,0.06),
+    0 0.5px 1px rgba(0,0,0,0.1);
+}
+.traffic .r{ background:var(--red); }
+.traffic .y{ background:var(--yellow); }
+.traffic .g{ background:var(--green); }
+.traffic span::before{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 600;
+  color: rgba(0,0,0,0.5);
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  line-height: 1;
+}
+.traffic .r::before{ content: '×'; }
+.traffic .y::before{ content: '−'; }
+.traffic .g::before{ content: '⤢'; font-size: 6px; }
+.window-header:hover .traffic span::before{ opacity: 1; }
+.window-title{
+  font-size:0.82rem;
+  font-weight:500;
+  letter-spacing:-0.01em;
+  color:var(--ink-soft);
+  margin:0 auto;
+  transform: translateX(-22px);
+}
+
+/* The "paper" always stays light, like a real document —
+   re-pin the tokens locally so dark mode never inverts the sheet. */
+.doc-page{
+  --ink: #1d1d1f;
+  --ink-soft: #6e6e73;
+  --accent: #0071e3;
+  --accent-soft: rgba(0,113,227,0.1);
+  --hair: rgba(0,0,0,0.08);
+  color: var(--ink);
+  background:#fff;
+  margin:1.5rem auto;
+  width:calc(100% - 3rem);
+  border-radius:6px;
+  box-shadow:0 10px 26px rgba(0,0,0,0.12);
+  padding: 2.1rem 1.9rem 2.4rem;
+}
+.doc-section h3{
+  font-size:0.72rem;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  color:var(--accent);
+  border-bottom:1px solid var(--hair);
+  padding-bottom:0.4rem;
+}
+
+/* ---------------- Dock ---------------- */
+.dock-wrap{
+  position:fixed;
+  left:0; right:0; bottom:0.9rem;
+  bottom: max(0.9rem, env(safe-area-inset-bottom));
+  display:flex;
+  justify-content:center;
+  z-index:30;
+  pointer-events:none;
+  padding: 0 0.75rem;
+}
+.dock{
+  pointer-events:all;
+  display:flex;
+  align-items:flex-end;
+  gap:0.55rem;
+  padding:0.55rem 0.8rem;
+  background:var(--dock-bg);
+  backdrop-filter: blur(22px) saturate(1.6);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  border-radius:20px;
+  border:1px solid var(--dock-border);
+  box-shadow: 0 18px 40px rgba(20,20,40,0.22);
+}
+.dock-item{
+  position:relative;
+  width:48px; height:48px;
+  border-radius:12px;
+  border:none;
+  padding:0;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  color:#fff;
+  font: inherit;
+  text-decoration:none;
+  transition: transform 0.14s ease;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.18);
+  flex-shrink:0;
+}
+.dock-item .icon{ width:20px; height:20px; }
+.dock-item.x .icon{ width:17px; height:17px; }
+.dock-item:hover{ transform: translateY(-10px) scale(1.14); }
+.dock-item:active{
+  transform: scale(0.88) translateY(-2px);
+  transition: transform 0.08s ease;
+}
+.dock-item::after{
+  content: attr(data-label);
+  position:absolute;
+  bottom:calc(100% + 10px);
+  left:50%;
+  transform: translateX(-50%);
+  background:rgba(30,30,32,0.85);
+  color:#fff;
+  font-size:0.72rem;
+  font-weight:500;
+  padding:0.3rem 0.6rem;
+  border-radius:6px;
+  white-space:nowrap;
+  opacity:0;
+  pointer-events:none;
+  transition: opacity 0.12s ease;
+}
+.dock-item:hover::after, .dock-item:focus-visible::after{ opacity:1; }
+.dock-sep{ width:1px; align-self:stretch; background:var(--sep); margin: 4px 0.15rem; }
+
+@media (max-width:480px){
+  .dock{ gap:0.4rem; padding:0.45rem 0.6rem; border-radius:18px; max-width:100%; overflow-x:auto; scrollbar-width:none; }
+  .dock::-webkit-scrollbar{ display:none; }
+  .dock-item{ width:40px; height:40px; border-radius:10px; }
+  .dock-item .icon{ width:18px; height:18px; }
+  .dock-item:hover{ transform: translateY(-6px) scale(1.08); }
+  .dock-item::after{ display:none; }
+}
+
+/* Brand / app tile colours, shared by dock, Finder, and Spotlight */
+.home{ background: linear-gradient(160deg,#8fb7ff,#5a86f7); }
+.about{ background: linear-gradient(160deg,#a78bfa,#7c5cf0); }
+.ig{ background: radial-gradient(circle at 30% 110%, #fdf497 0%, #fd5949 30%, #d6249f 55%, #285AEB 100%); }
+.x{ background:#000; }
+.tt{ background:#000; }
+.dc{ background:#5865F2; }
+.sp{ background:#1DB954; }
+.lb{ background:#202830; }
+.wa{ background:#25D366; }
+.mail{ background: linear-gradient(160deg, #6b8cff, #3a5be0); }
+.app-resume{ background: linear-gradient(160deg,#ff9d9d,#f45c5c); }
+.app-links{ background: linear-gradient(160deg,#8fb7ff,#5a86f7); }
+.app-notes{ background: linear-gradient(160deg,#ffd76a,#f5b100); }
+.app-mc{ background: linear-gradient(160deg,#5a5a5a,#3a3a3a); }
+.app-nc{ background: linear-gradient(160deg,#ff7a7a,#e5484d); }
+
+/* ---------------- Toast ---------------- */
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:6.5rem;
+  z-index:120;
+  transform:translate(-50%, 8px);
+  background:rgba(30,30,32,0.9);
+  color:#fff;
+  font-size:0.84rem;
+  font-weight:500;
+  padding:0.55rem 0.95rem;
+  border-radius:10px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.25);
+  opacity:0;
+  pointer-events:none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  max-width:calc(100% - 2rem);
+  text-align:center;
+}
+.toast.show{ opacity:1; transform:translate(-50%, 0); }
+
+footer{
+  text-align:center;
+  color:var(--ink-soft);
+  font-size:0.8rem;
+  padding-bottom:2rem;
+}
+
+.visually-hidden{
+  position:absolute !important;
+  width:1px; height:1px;
+  margin:-1px; padding:0; border:0;
+  overflow:hidden;
+  clip:rect(0 0 0 0);
+  white-space:nowrap;
+}
+
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior:auto; }
+  .dock-item, .toast{ transition:none; }
+  .dock-item:hover{ transform:none; }
+}
