@@ -131,7 +131,8 @@
 
       var header = win.querySelector('.window-header');
       header.addEventListener('pointerdown', function(e){
-        if(!desktopModeActive || e.button !== 0) return;
+        // toolbar buttons are clickable, not drag handles
+        if(!desktopModeActive || e.button !== 0 || e.target.closest('a, button')) return;
         e.preventDefault();
         win.classList.add('dragging');
         var startLeft = win.offsetLeft, startTop = win.offsetTop;
@@ -320,7 +321,7 @@
 
     spotlightResults.innerHTML = spotlightMatches.map(function(it, i){
       return '<button type="button" tabindex="-1" role="option" class="spotlight-item" id="sp-opt-' + i + '" data-index="' + i + '">' +
-        '<span class="finder-icon ' + it.cls + '"><svg class="icon" aria-hidden="true"><use href="/icons.svg#' + it.icon + '"/></svg></span>' +
+        '<span class="finder-icon tile ' + it.cls + '"><svg class="icon" aria-hidden="true"><use href="/icons.svg#' + it.icon + '"/></svg></span>' +
         '<span>' + it.name + '</span>' +
         '<span class="si-meta">' + it.meta + '</span>' +
         '</button>';
@@ -459,8 +460,38 @@
       });
   }
 
+  /* Appearance widget: Light / Dark / Auto + the Liquid Glass slider */
+  var themeButtons = Array.prototype.slice.call(layers.notif.querySelectorAll('[data-theme-set]'));
+  var tintInput = document.getElementById('glassTint');
+  var tintOut = document.getElementById('glassTintOut');
+
+  function describeTint(v){
+    return v < 0.15 ? 'Clear' : v > 0.85 ? 'Tinted' : Math.round(v * 100) + '%';
+  }
+  function syncAppearance(){
+    var mode = ivx.themeMode();
+    themeButtons.forEach(function(b){
+      b.setAttribute('aria-checked', b.dataset.themeSet === mode ? 'true' : 'false');
+    });
+    var v = ivx.glassTint();
+    tintInput.value = Math.round(v * 100);
+    tintOut.textContent = describeTint(v);
+    tintInput.setAttribute('aria-valuetext', describeTint(v));
+  }
+  themeButtons.forEach(function(b){
+    b.addEventListener('click', function(){
+      ivx.setTheme(b.dataset.themeSet);
+      syncAppearance();
+    });
+  });
+  tintInput.addEventListener('input', function(){
+    ivx.setGlassTint(tintInput.value / 100);
+    syncAppearance();
+  });
+
   function openNotif(){
     loadWeather();
+    syncAppearance();
     openLayer('notif', document.getElementById('ncClose'));
   }
 
@@ -501,10 +532,10 @@
     menu.style.left = x + 'px';
     menu.style.top = y + 'px';
     openLayer('menu', menuItems[0]);
-    // keep inside the viewport
-    var rect = menu.getBoundingClientRect();
-    if(rect.right > window.innerWidth) menu.style.left = Math.max(8, window.innerWidth - rect.width - 8) + 'px';
-    if(rect.bottom > window.innerHeight) menu.style.top = Math.max(8, window.innerHeight - rect.height - 8) + 'px';
+    // keep inside the viewport (offset sizes ignore the open animation's scale)
+    var w = menu.offsetWidth, h = menu.offsetHeight;
+    if(x + w > window.innerWidth - 8) menu.style.left = Math.max(8, window.innerWidth - w - 8) + 'px';
+    if(y + h > window.innerHeight - 8) menu.style.top = Math.max(8, window.innerHeight - h - 8) + 'px';
   }
 
   document.addEventListener('contextmenu', function(e){

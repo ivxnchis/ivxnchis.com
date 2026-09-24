@@ -31,6 +31,7 @@
      show the boot screen (only on the first visit of a session). */
   (function(d){
     try{ var t = localStorage.getItem('theme'); if(t === 'light' || t === 'dark') d.dataset.theme = t; }catch(e){}
+    try{ var g = parseFloat(localStorage.getItem('glassTint')); if(g >= 0 && g <= 1) d.style.setProperty('--glass-tint', g); }catch(e){}
     var skip = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     try{
       skip = skip || !!sessionStorage.getItem('ivxBooted') || !!sessionStorage.getItem('ivxNav');
@@ -85,12 +86,12 @@
     font-family:inherit;
     color:#fff;
     padding:0.4rem 0.3rem;
-    border-radius:8px;
+    border-radius:12px;
   }
-  .desktop-icon:hover{ background:rgba(255,255,255,0.2); }
+  .desktop-icon:hover{ background:rgba(255,255,255,0.18); }
   .desktop-icon .glyph{
-    width:38px; height:38px;
-    border-radius:9px;
+    width:40px; height:40px;
+    border-radius:10px;
     display:flex; align-items:center; justify-content:center;
     box-shadow:0 6px 14px rgba(0,0,0,0.12);
   }
@@ -174,17 +175,15 @@
   }
   body.desktop-mode .window.dragging{
     box-shadow:
-      0 0 0 0.5px rgba(0,0,0,0.06),
-      0 4px 12px rgba(0,0,0,0.06),
-      0 12px 32px rgba(0,0,0,0.1),
-      0 36px 80px -12px rgba(0,0,0,0.22);
+      inset 0 0 0 1px var(--glass-edge-dim),
+      0 0 0 0.5px rgba(0,0,0,0.12),
+      0 40px 90px -16px rgba(15,25,60,0.45),
+      0 6px 18px rgba(15,25,60,0.12);
   }
   /* background windows look muted */
   body.desktop-mode .window:not(.window-active):not(:hover):not(.dragging){ opacity: 0.82; }
 
   .window-header{
-    height:44px;
-    padding:0 1rem;
     position:-webkit-sticky;
     position:sticky;
     top:0;
@@ -201,7 +200,7 @@
     touch-action:none;
     background: linear-gradient(135deg, transparent 50%, var(--ink-soft) 50%);
     opacity:0.4;
-    border-bottom-right-radius:12px;
+    border-bottom-right-radius:18px;
   }
   body.desktop-mode .resize-handle{ display:block; }
 
@@ -217,11 +216,13 @@
     text-transform:uppercase;
     letter-spacing:0.04em;
     color:var(--ink-soft);
-    border-bottom:1px solid var(--hair);
-    background:var(--window-header);
+    background:var(--toolbar-bg);
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    box-shadow: 0 1px 0 var(--glass-shade);
     position:-webkit-sticky;
     position:sticky;
-    top:44px;
+    top:52px;
     z-index:4;
   }
   .finder-list{ list-style:none; margin:0; padding:0.35rem 0.6rem 0.6rem; }
@@ -233,7 +234,7 @@
     width:100%;
     padding:0.55rem 0.6rem;
     border:0;
-    border-radius:8px;
+    border-radius:12px;
     background:none;
     font:inherit;
     text-align:left;
@@ -244,13 +245,13 @@
   .finder-row:hover, .finder-row:focus-visible{ background:var(--accent-soft); }
   .finder-name{ display:flex; align-items:center; gap:0.7rem; font-size:0.94rem; }
   .finder-icon{
-    width:26px; height:26px; border-radius:7px; flex-shrink:0;
+    width:28px; height:28px; border-radius:8px; flex-shrink:0;
     display:flex; align-items:center; justify-content:center;
     color:#fff;
   }
   .finder-icon .icon{ width:15px; height:15px; }
   .finder-icon.x .icon{ width:13px; height:13px; }
-  .finder-icon.mini{ width:18px; height:18px; border-radius:5px; }
+  .finder-icon.mini{ width:20px; height:20px; border-radius:6px; }
   .finder-icon.mini .icon{ width:11px; height:11px; }
   .finder-kind, .finder-date{ font-size:0.82rem; color:var(--ink-soft); }
 
@@ -265,8 +266,8 @@
     display: none;
     width: 150px;
     flex-shrink: 0;
-    background: var(--sidebar-bg);
-    border-right: 1px solid var(--hair);
+    background: rgb(var(--glass-rgb) / calc(var(--glass-alpha) * 0.35));
+    box-shadow: 1px 0 0 var(--glass-shade);
     padding: 0.5rem 0 0.6rem;
     align-self: stretch;
   }
@@ -282,9 +283,11 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    width: 100%;
-    padding: 0.3rem 0.9rem;
+    width: calc(100% - 1rem);
+    margin: 1px 0.5rem;
+    padding: 0.3rem 0.5rem;
     border: 0;
+    border-radius: var(--r-item);
     background: none;
     font: inherit;
     font-size: 0.82rem;
@@ -297,7 +300,7 @@
   }
   .finder-sidebar a:hover, .finder-sidebar a:focus-visible,
   .finder-sidebar button:hover, .finder-sidebar button:focus-visible{ background: var(--accent-soft); }
-  .finder-sidebar .current{ background: var(--accent); color: #fff; cursor: default; }
+  .finder-sidebar .current{ background: var(--accent-soft); color: var(--accent); font-weight:600; cursor: default; }
   .finder-sidebar .current .icon{ width:12px; height:12px; opacity:0.85; }
   /* Show the sidebar only when the Links window itself is wide enough,
      whether it's in the page flow or resized on the desktop. */
@@ -307,26 +310,11 @@
   }
 
   /* ---------------- Preview-style resume document ---------------- */
-  .doc-toolbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:1rem;
-    padding:0.5rem 1.2rem;
-    font-size:0.78rem;
-    color:var(--ink-soft);
-    border-bottom:1px solid var(--hair);
-    background:var(--window-header);
-    position:sticky;
-    top:44px;
-    z-index:4;
+  @container (max-width: 520px){
+    .toolbar-actions .btn-label{ display:none; }
+    .toolbar-actions .glass-btn{ width:30px; padding:0; justify-content:center; }
   }
-  .doc-actions{ display:flex; gap:1rem; }
-  .doc-actions a, .doc-actions button{
-    background:none; border:none; cursor:pointer; padding:0;
-    font:inherit; font-size:0.78rem; font-weight:600;
-    color:var(--accent); text-decoration:none;
-  }
+  #resume{ container-type: inline-size; }
   .doc-page{ max-width:960px; }
   .doc-page h2{
     font-size:1.35rem;
@@ -354,8 +342,8 @@
     font-size:0.76rem;
     background:var(--accent-soft);
     color:var(--accent);
-    padding:0.3rem 0.65rem;
-    border-radius:20px;
+    padding:0.3rem 0.7rem;
+    border-radius:999px;
     font-weight:500;
   }
 
@@ -455,13 +443,17 @@
     border:0;
     color:inherit;
     cursor:pointer;
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
+    padding: 0.25rem 0.45rem;
+    border-radius: 999px;
     transition: background 0.12s ease;
   }
-  .notif-toggle:hover{ background: var(--hover); }
+  .notif-toggle:hover{ background: rgba(255,255,255,0.2); }
+  .menubar.scrolled .notif-toggle:hover{ background: var(--hover); }
+  .notif-toggle .icon{ filter: drop-shadow(0 1px 4px rgba(0,0,0,0.25)); }
+  .menubar.scrolled .notif-toggle .icon{ filter:none; }
 
-  /* ===================== SPOTLIGHT SEARCH ===================== */
+  /* ===================== SPOTLIGHT SEARCH =====================
+     A floating glass capsule with a separate glass results panel. */
   #spotlight{
     position: fixed;
     inset: 0;
@@ -470,9 +462,7 @@
     align-items: flex-start;
     justify-content: center;
     padding: 18vh 1rem 0;
-    background: rgba(0,0,0,0.25);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(0,0,0,0.12);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.18s ease;
@@ -480,25 +470,22 @@
   #spotlight.active{ opacity: 1; pointer-events: all; }
   .spotlight-box{
     width: 100%;
-    max-width: 520px;
-    background: rgba(40,40,44,0.82);
-    backdrop-filter: blur(40px) saturate(1.6);
-    -webkit-backdrop-filter: blur(40px) saturate(1.6);
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 24px 60px rgba(0,0,0,0.4), 0 0 0 0.5px rgba(0,0,0,0.3);
-    overflow: hidden;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
     transform: scale(0.96) translateY(-8px);
-    transition: transform 0.22s cubic-bezier(0.22,1,0.36,1);
+    transition: transform 0.26s cubic-bezier(0.34,1.3,0.64,1);
   }
   #spotlight.active .spotlight-box{ transform: scale(1) translateY(0); }
   .spotlight-input-wrap{
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    padding: 0.7rem 1rem;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.5);
+    gap: 0.7rem;
+    height: 58px;
+    padding: 0 1.3rem;
+    border-radius: 999px;
+    color: var(--ink-soft);
   }
   #spotlightInput{
     flex: 1;
@@ -506,62 +493,63 @@
     background: none;
     border: none;
     outline: none;
-    color: #fff;
+    color: var(--ink);
     font-family: inherit;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     letter-spacing: -0.01em;
   }
-  #spotlightInput::placeholder{ color: rgba(255,255,255,0.35); }
+  #spotlightInput::placeholder{ color: var(--ink-soft); }
   .spotlight-results{
-    max-height: 320px;
+    max-height: 340px;
     overflow-y: auto;
-    padding: 0.4rem 0;
+    padding: 0.45rem;
+    border-radius: var(--r-card);
   }
   .spotlight-results::-webkit-scrollbar{ width: 6px; }
-  .spotlight-results::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.15); border-radius: 3px; }
+  .spotlight-results::-webkit-scrollbar-thumb{ background: var(--scroll-thumb); border-radius: 3px; }
   .spotlight-item{
     display: flex;
     align-items: center;
-    gap: 0.7rem;
+    gap: 0.75rem;
     width: 100%;
-    padding: 0.5rem 1rem;
-    color: rgba(255,255,255,0.85);
+    padding: 0.45rem 0.6rem;
+    border-radius: 12px;
+    color: var(--ink);
     font: inherit;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     text-align: left;
     cursor: pointer;
     transition: background 0.08s ease;
     border: none;
     background: none;
   }
-  .spotlight-item:hover,
-  .spotlight-item.focused{ background: rgba(10,132,255,0.9); color: #fff; }
-  .spotlight-item .finder-icon{ width:28px; height:28px; }
+  .spotlight-item:hover{ background: var(--hover); }
+  .spotlight-item.focused{ background: var(--accent); color: #fff; }
+  .spotlight-item .finder-icon{ width:30px; height:30px; }
   .spotlight-item .si-meta{
     margin-left: auto;
-    font-size: 0.72rem;
-    color: rgba(255,255,255,0.4);
+    font-size: 0.74rem;
+    color: var(--ink-soft);
   }
-  .spotlight-item:hover .si-meta,
-  .spotlight-item.focused .si-meta{ color: rgba(255,255,255,0.7); }
+  .spotlight-item.focused .si-meta{ color: rgba(255,255,255,0.8); }
   .spotlight-empty{
-    padding: 1.5rem;
+    padding: 1.4rem;
     text-align: center;
-    color: rgba(255,255,255,0.4);
-    font-size: 0.85rem;
+    color: var(--ink-soft);
+    font-size: 0.88rem;
   }
   .spotlight-kbd{
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
-    font-size: 0.65rem;
-    color: rgba(255,255,255,0.35);
+    font-size: 0.68rem;
+    color: var(--ink-soft);
     white-space: nowrap;
   }
   kbd{
-    background: rgba(255,255,255,0.1);
-    padding: 0.05rem 0.3rem;
-    border-radius: 3px;
+    background: var(--hover);
+    padding: 0.05rem 0.35rem;
+    border-radius: 5px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
 
@@ -577,9 +565,9 @@
     gap: 2rem;
     padding: 1.5rem;
     overflow-y: auto;
-    background: rgba(0,0,0,0.55);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(10,15,35,0.35);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
@@ -589,7 +577,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 2.6rem 1.2rem;
+    gap: 2.6rem 1.4rem;
     max-width: 100%;
   }
   .mc-thumb{
@@ -601,186 +589,201 @@
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    border-radius: 10px;
+    border: 0;
+    border-radius: 16px;
     background: var(--window-bg);
-    border: 1px solid var(--dock-border);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+    box-shadow: inset 0 0 0 1px var(--glass-edge-dim), 0 16px 36px rgba(0,0,0,0.3);
     cursor: pointer;
     position: relative;
     font: inherit;
     text-align: left;
     color: var(--ink);
-    transform: scale(0.9);
-    transition: transform 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s ease;
+    transform: scale(0.92);
+    transition: transform 0.22s cubic-bezier(0.34,1.3,0.64,1), box-shadow 0.2s ease;
   }
   .mc-thumb:hover, .mc-thumb:focus-visible{
     transform: scale(1);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+    box-shadow: inset 0 0 0 1px var(--glass-edge-dim), 0 0 0 3px var(--accent), 0 20px 44px rgba(0,0,0,0.35);
   }
   .mc-header{
-    height: 24px;
-    background: var(--window-header);
-    border-bottom: 1px solid var(--hair);
-    border-radius: 10px 10px 0 0;
+    height: 26px;
+    background: var(--toolbar-bg);
+    box-shadow: inset 0 1px 0 var(--glass-hi), 0 1px 0 var(--glass-shade);
+    border-radius: 16px 16px 0 0;
     display: flex;
     align-items: center;
-    padding: 0 0.5rem;
+    padding: 0 0.6rem;
     gap: 4px;
   }
   .mc-header span{ width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
   .mc-preview{
     display: block;
-    padding: 0.6rem;
-    font-size: 0.6rem;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.62rem;
     color: var(--ink-soft);
     line-height: 1.4;
   }
   .mc-preview strong{ display:block; color: var(--ink); margin-bottom: 0.3rem; }
   .mc-label{
     position: absolute;
-    top: calc(100% + 8px);
+    top: calc(100% + 10px);
     left: 50%;
     transform: translateX(-50%);
     color: #fff;
     font-size: 0.8rem;
-    font-weight: 500;
+    font-weight: 600;
     text-shadow: 0 1px 4px rgba(0,0,0,0.5);
     white-space: nowrap;
   }
   .mc-dock-hint{
-    color: rgba(255,255,255,0.6);
+    color: rgba(255,255,255,0.75);
     font-size: 0.75rem;
     margin: 1rem 0 0;
   }
+  .mc-dock-hint kbd{ background: rgba(255,255,255,0.18); }
   @media (max-width:700px){
     .mc-thumb{ width: 200px; height: 130px; }
   }
 
-  /* ===================== NOTIFICATION CENTER ===================== */
+  /* ===================== NOTIFICATION CENTER =====================
+     No sheet behind it: floating glass widgets, like macOS 26/27. */
   #notifCenter{
     position: fixed;
-    top: 0; right: 0; bottom: 0;
-    width: 360px;
-    max-width: 85vw;
+    top: 34px; right: 0; bottom: 0;
+    width: 380px;
+    max-width: 100vw;
     z-index: 80;
-    background: rgba(30,30,33,0.88);
-    backdrop-filter: blur(40px) saturate(1.4);
-    -webkit-backdrop-filter: blur(40px) saturate(1.4);
-    border-left: 1px solid rgba(255,255,255,0.08);
-    box-shadow: -10px 0 40px rgba(0,0,0,0.3);
-    transform: translateX(100%);
-    transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), visibility 0s linear 0.3s;
-    visibility: hidden;
+    padding: 0.6rem 0.75rem 1rem;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    gap: 0.7rem;
+    overflow-y: auto;
+    transform: translateX(105%);
+    transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), visibility 0s linear 0.35s;
+    visibility: hidden;
   }
   #notifCenter.active{
     transform: translateX(0);
     visibility: visible;
-    transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+    transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
   }
   .nc-header{
-    padding: 1rem 1.2rem;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 0.2rem 0.4rem 0 0.6rem;
   }
   .nc-header h2{
     margin: 0;
     color: #fff;
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.35);
   }
-  .nc-close{
-    background: none;
-    border: none;
-    color: rgba(255,255,255,0.6);
-    cursor: pointer;
-    font-size: 1.3rem;
-    padding: 0.2rem 0.4rem;
-    line-height: 1;
-    transition: color 0.12s ease;
-  }
-  .nc-close:hover{ color: #fff; }
-  .nc-content{
-    flex: 1;
-    overflow-y: auto;
-    padding: 0.8rem;
-  }
-  .nc-content::-webkit-scrollbar{ width: 6px; }
-  .nc-content::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.12); border-radius: 3px; }
+  .nc-close.glass-btn{ font-size: 1.1rem; line-height: 1; }
+  .nc-content{ display:flex; flex-direction:column; gap:0.7rem; }
   .nc-widget{
-    background: rgba(255,255,255,0.06);
-    border-radius: 14px;
-    padding: 1rem;
-    margin-bottom: 0.8rem;
-    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: var(--r-card);
+    padding: 1rem 1.1rem;
+    flex-shrink: 0;
   }
   .nc-widget h3{
-    margin: 0 0 0.4rem;
-    color: rgba(255,255,255,0.6);
+    margin: 0 0 0.45rem;
+    color: var(--ink-soft);
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    font-weight: 600;
+    font-weight: 700;
   }
   .nc-widget p{
     margin: 0;
-    color: rgba(255,255,255,0.85);
-    font-size: 0.85rem;
+    color: var(--ink);
+    font-size: 0.88rem;
     line-height: 1.5;
   }
   .nc-time{
-    color: rgba(255,255,255,0.45);
-    font-size: 0.72rem;
+    color: var(--ink-soft);
+    font-size: 0.74rem;
     margin-top: 0.3rem;
   }
   .nc-weather{
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.8rem;
   }
   .nc-weather .temp{
-    font-size: 2.2rem;
-    font-weight: 400;
-    color: #fff;
-    min-width: 3.2rem;
-  }
-  .nc-weather .cond{ color: rgba(255,255,255,0.7); font-size: 0.85rem; }
-  .nc-weather .loc{ color: rgba(255,255,255,0.45); font-size: 0.75rem; }
-  .nc-actions{ display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:0.3rem; }
-  .nc-actions button{
-    border: none;
-    cursor: pointer;
-    font: inherit;
-    font-size: 0.76rem;
+    font-size: 2.4rem;
     font-weight: 500;
-    padding: 0.3rem 0.7rem;
-    border-radius: 20px;
-    background: rgba(10,132,255,0.22);
-    color: #cfe4ff;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    line-height: 1.1;
   }
-  .nc-actions button:hover{ background: rgba(10,132,255,0.4); color:#fff; }
+  .nc-weather .cond{ color: var(--ink); font-size: 0.86rem; text-align: right; }
+  .nc-weather .range{ color: var(--ink-soft); font-size: 0.8rem; text-align: right; }
+  .nc-weather .loc{ color: var(--ink-soft); font-size: 0.76rem; }
+  .nc-actions{ display:flex; gap:0.4rem; flex-wrap:wrap; }
+  .nc-actions .glass-btn{ color: var(--accent); }
+
+  /* Appearance widget: theme segmented control + Liquid Glass slider */
+  .segmented{
+    display: flex;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--hover);
+    margin-bottom: 0.9rem;
+  }
+  .segmented button{
+    flex: 1;
+    height: 28px;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+  }
+  .segmented button[aria-checked="true"]{
+    background: rgb(var(--glass-rgb) / 0.95);
+    box-shadow: inset 0 1px 0 var(--glass-hi), 0 1px 4px rgba(0,0,0,0.15);
+    font-weight: 600;
+  }
+  .tint-label{
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.35rem;
+  }
+  .tint-label output{ color: var(--ink-soft); font-weight: 500; }
+  .tint-row{
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+  }
+  .tint-row input[type="range"]{
+    flex: 1;
+    accent-color: var(--accent);
+  }
 
   /* ===================== CONTEXT MENU ===================== */
   #contextMenu{
     position: fixed;
     z-index: 95;
-    background: rgba(40,40,44,0.92);
-    backdrop-filter: blur(30px) saturate(1.4);
-    -webkit-backdrop-filter: blur(30px) saturate(1.4);
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.35);
-    padding: 0.3rem;
-    min-width: 200px;
+    border-radius: var(--r-menu);
+    padding: 0.35rem;
+    min-width: 220px;
     opacity: 0;
     pointer-events: none;
     transform: scale(0.95);
     transform-origin: top left;
-    transition: opacity 0.1s ease, transform 0.1s ease;
+    transition: opacity 0.12s ease, transform 0.16s cubic-bezier(0.34,1.3,0.64,1);
   }
   #contextMenu.active{
     opacity: 1;
@@ -792,31 +795,31 @@
     align-items: center;
     gap: 0.6rem;
     width: 100%;
-    padding: 0.3rem 0.6rem;
+    padding: 0.32rem 0.65rem;
     border: none;
-    border-radius: 4px;
+    border-radius: var(--r-item);
     background: none;
-    color: rgba(255,255,255,0.9);
+    color: var(--ink);
     font: inherit;
-    font-size: 0.85rem;
+    font-size: 0.86rem;
     text-align: left;
     cursor: pointer;
   }
   .ctx-item:hover, .ctx-item:focus{
-    background: rgba(10,132,255,0.9);
+    background: var(--accent);
     color: #fff;
     outline: none;
   }
   .ctx-shortcut{
     margin-left: auto;
-    font-size: 0.72rem;
-    color: rgba(255,255,255,0.4);
+    font-size: 0.74rem;
+    color: var(--ink-soft);
   }
-  .ctx-item:hover .ctx-shortcut, .ctx-item:focus .ctx-shortcut{ color: rgba(255,255,255,0.75); }
+  .ctx-item:hover .ctx-shortcut, .ctx-item:focus .ctx-shortcut{ color: rgba(255,255,255,0.8); }
   .ctx-sep{
     height: 1px;
-    background: rgba(255,255,255,0.08);
-    margin: 0.25rem 0.3rem;
+    background: var(--hair);
+    margin: 0.3rem 0.65rem;
   }
 
   .dock-item.mission-control .icon{ width:18px; height:18px; }
@@ -878,18 +881,18 @@
 
 <div class="desktop-icons">
   <button type="button" class="desktop-icon" data-target="links">
-    <span class="glyph app-links"><svg class="icon" aria-hidden="true"><use href="/icons.svg#folder"/></svg></span>
+    <span class="glyph tile app-links"><svg class="icon" aria-hidden="true"><use href="/icons.svg#folder"/></svg></span>
     <span class="label">Links</span>
   </button>
   <button type="button" class="desktop-icon" data-target="resume">
-    <span class="glyph app-resume"><svg class="icon" aria-hidden="true"><use href="/icons.svg#doc"/></svg></span>
+    <span class="glyph tile app-resume"><svg class="icon" aria-hidden="true"><use href="/icons.svg#doc"/></svg></span>
     <span class="label">Resume.pdf</span>
   </button>
 </div>
 
 <main>
   <div class="hero">
-    <div class="avatar-ring" aria-hidden="true">IS</div>
+    <div class="avatar-ring tile" aria-hidden="true">IS</div>
     <div>
       <h1>IVXNCHIS</h1>
       <p class="subtitle">Ivan Solano — Customer Service Supervisor &amp; Communications Professional</p>
@@ -902,13 +905,10 @@
     <div class="window-header">
       <div class="traffic" aria-hidden="true"><span class="r"></span><span class="y"></span><span class="g"></span></div>
       <p class="window-title" id="resume-title">Resume.pdf — Preview</p>
-    </div>
-    <div class="doc-toolbar">
-      <span>1 of 1</span>
-      <span class="doc-actions">
-        <a href="/resume.pdf" download="Ivan-Solano-Resume.pdf">Download PDF ⤓</a>
-        <button type="button" id="shareBtn">Share ⤴</button>
-      </span>
+      <div class="toolbar-actions">
+        <a class="glass-btn" href="/resume.pdf" download="Ivan-Solano-Resume.pdf" aria-label="Download PDF"><svg class="icon" aria-hidden="true"><use href="/icons.svg#download"/></svg><span class="btn-label">PDF</span></a>
+        <button type="button" class="glass-btn" id="shareBtn" aria-label="Share"><svg class="icon" aria-hidden="true"><use href="/icons.svg#share"/></svg><span class="btn-label">Share</span></button>
+      </div>
     </div>
 
     <div class="doc-page">
@@ -1002,15 +1002,15 @@
       <nav class="finder-sidebar" aria-label="Finder sidebar">
         <h4>Favorites</h4>
         <span class="current" aria-current="page"><svg class="icon" aria-hidden="true"><use href="/icons.svg#folder"/></svg> All Links</span>
-        <a href="https://instagram.com/ivan.sln" target="_blank" rel="noopener"><span class="finder-icon mini ig"><svg class="icon" aria-hidden="true"><use href="/icons.svg#ig"/></svg></span> Instagram</a>
-        <a href="https://x.com/ivxnchis" target="_blank" rel="noopener"><span class="finder-icon mini x"><svg class="icon" aria-hidden="true"><use href="/icons.svg#x"/></svg></span> X</a>
-        <a href="https://www.tiktok.com/@ivxnchis" target="_blank" rel="noopener"><span class="finder-icon mini tt"><svg class="icon" aria-hidden="true"><use href="/icons.svg#tt"/></svg></span> TikTok</a>
-        <a href="https://open.spotify.com/user/ivansolanoc" target="_blank" rel="noopener"><span class="finder-icon mini sp"><svg class="icon" aria-hidden="true"><use href="/icons.svg#sp"/></svg></span> Spotify</a>
-        <a href="https://letterboxd.com/IVXNCHIS" target="_blank" rel="noopener"><span class="finder-icon mini lb"><svg class="icon" aria-hidden="true"><use href="/icons.svg#lb"/></svg></span> Letterboxd</a>
+        <a href="https://instagram.com/ivan.sln" target="_blank" rel="noopener"><span class="finder-icon tile mini ig"><svg class="icon" aria-hidden="true"><use href="/icons.svg#ig"/></svg></span> Instagram</a>
+        <a href="https://x.com/ivxnchis" target="_blank" rel="noopener"><span class="finder-icon tile mini x"><svg class="icon" aria-hidden="true"><use href="/icons.svg#x"/></svg></span> X</a>
+        <a href="https://www.tiktok.com/@ivxnchis" target="_blank" rel="noopener"><span class="finder-icon tile mini tt"><svg class="icon" aria-hidden="true"><use href="/icons.svg#tt"/></svg></span> TikTok</a>
+        <a href="https://open.spotify.com/user/ivansolanoc" target="_blank" rel="noopener"><span class="finder-icon tile mini sp"><svg class="icon" aria-hidden="true"><use href="/icons.svg#sp"/></svg></span> Spotify</a>
+        <a href="https://letterboxd.com/IVXNCHIS" target="_blank" rel="noopener"><span class="finder-icon tile mini lb"><svg class="icon" aria-hidden="true"><use href="/icons.svg#lb"/></svg></span> Letterboxd</a>
         <h4>Connect</h4>
-        <button type="button" data-copy="ivxnchis" data-copy-label="Discord username"><span class="finder-icon mini dc"><svg class="icon" aria-hidden="true"><use href="/icons.svg#dc"/></svg></span> Discord</button>
-        <a href="https://wa.link/rcedvv" target="_blank" rel="noopener"><span class="finder-icon mini wa"><svg class="icon" aria-hidden="true"><use href="/icons.svg#wa"/></svg></span> WhatsApp</a>
-        <a href="mailto:reach@ivxnchis.com"><span class="finder-icon mini mail"><svg class="icon" aria-hidden="true"><use href="/icons.svg#mail"/></svg></span> Email</a>
+        <button type="button" data-copy="ivxnchis" data-copy-label="Discord username"><span class="finder-icon tile mini dc"><svg class="icon" aria-hidden="true"><use href="/icons.svg#dc"/></svg></span> Discord</button>
+        <a href="https://wa.link/rcedvv" target="_blank" rel="noopener"><span class="finder-icon tile mini wa"><svg class="icon" aria-hidden="true"><use href="/icons.svg#wa"/></svg></span> WhatsApp</a>
+        <a href="mailto:reach@ivxnchis.com"><span class="finder-icon tile mini mail"><svg class="icon" aria-hidden="true"><use href="/icons.svg#mail"/></svg></span> Email</a>
       </nav>
       <div class="links-content">
         <div class="finder-cols" aria-hidden="true">
@@ -1018,37 +1018,37 @@
         </div>
         <ul class="finder-list">
           <li><a class="finder-row" href="https://instagram.com/ivan.sln" target="_blank" rel="noopener">
-            <span class="finder-name"><span class="finder-icon ig"><svg class="icon" aria-hidden="true"><use href="/icons.svg#ig"/></svg></span>Instagram</span>
+            <span class="finder-name"><span class="finder-icon tile ig"><svg class="icon" aria-hidden="true"><use href="/icons.svg#ig"/></svg></span>Instagram</span>
             <span class="finder-kind">Profile</span>
             <span class="finder-date">@ivan.sln</span>
           </a></li>
           <li><a class="finder-row" href="https://x.com/ivxnchis" target="_blank" rel="noopener">
-            <span class="finder-name"><span class="finder-icon x"><svg class="icon" aria-hidden="true"><use href="/icons.svg#x"/></svg></span>X</span>
+            <span class="finder-name"><span class="finder-icon tile x"><svg class="icon" aria-hidden="true"><use href="/icons.svg#x"/></svg></span>X</span>
             <span class="finder-kind">Profile</span>
             <span class="finder-date">@ivxnchis</span>
           </a></li>
           <li><a class="finder-row" href="https://www.tiktok.com/@ivxnchis" target="_blank" rel="noopener">
-            <span class="finder-name"><span class="finder-icon tt"><svg class="icon" aria-hidden="true"><use href="/icons.svg#tt"/></svg></span>TikTok</span>
+            <span class="finder-name"><span class="finder-icon tile tt"><svg class="icon" aria-hidden="true"><use href="/icons.svg#tt"/></svg></span>TikTok</span>
             <span class="finder-kind">Profile</span>
             <span class="finder-date">@ivxnchis</span>
           </a></li>
           <li><button type="button" class="finder-row" data-copy="ivxnchis" data-copy-label="Discord username" title="Copy Discord username">
-            <span class="finder-name"><span class="finder-icon dc"><svg class="icon" aria-hidden="true"><use href="/icons.svg#dc"/></svg></span>Discord</span>
+            <span class="finder-name"><span class="finder-icon tile dc"><svg class="icon" aria-hidden="true"><use href="/icons.svg#dc"/></svg></span>Discord</span>
             <span class="finder-kind">Username</span>
             <span class="finder-date">ivxnchis · copy</span>
           </button></li>
           <li><a class="finder-row" href="https://open.spotify.com/user/ivansolanoc" target="_blank" rel="noopener">
-            <span class="finder-name"><span class="finder-icon sp"><svg class="icon" aria-hidden="true"><use href="/icons.svg#sp"/></svg></span>Spotify</span>
+            <span class="finder-name"><span class="finder-icon tile sp"><svg class="icon" aria-hidden="true"><use href="/icons.svg#sp"/></svg></span>Spotify</span>
             <span class="finder-kind">Profile</span>
             <span class="finder-date">Playlists</span>
           </a></li>
           <li><a class="finder-row" href="https://letterboxd.com/IVXNCHIS" target="_blank" rel="noopener">
-            <span class="finder-name"><span class="finder-icon lb"><svg class="icon" aria-hidden="true"><use href="/icons.svg#lb"/></svg></span>Letterboxd</span>
+            <span class="finder-name"><span class="finder-icon tile lb"><svg class="icon" aria-hidden="true"><use href="/icons.svg#lb"/></svg></span>Letterboxd</span>
             <span class="finder-kind">Film log</span>
             <span class="finder-date">Reviews</span>
           </a></li>
           <li><a class="finder-row" href="https://wa.link/rcedvv" target="_blank" rel="noopener">
-            <span class="finder-name"><span class="finder-icon wa"><svg class="icon" aria-hidden="true"><use href="/icons.svg#wa"/></svg></span>WhatsApp</span>
+            <span class="finder-name"><span class="finder-icon tile wa"><svg class="icon" aria-hidden="true"><use href="/icons.svg#wa"/></svg></span>WhatsApp</span>
             <span class="finder-kind">Chat</span>
             <span class="finder-date">Message me</span>
           </a></li>
@@ -1078,35 +1078,35 @@
 <footer>&copy; <span id="year"></span> ivxnchis.com</footer>
 
 <div class="dock-wrap">
-  <nav class="dock" aria-label="Dock">
-    <button class="dock-item app-mc mission-control" id="mcBtn" data-label="Mission Control" type="button" aria-label="Mission Control" aria-controls="missionControl" aria-expanded="false">
+  <nav class="dock glass" aria-label="Dock">
+    <button class="dock-item tile app-mc mission-control" id="mcBtn" data-label="Mission Control" type="button" aria-label="Mission Control" aria-controls="missionControl" aria-expanded="false">
       <svg class="icon" aria-hidden="true"><use href="/icons.svg#grid"/></svg>
     </button>
     <span class="dock-sep" aria-hidden="true"></span>
-    <a class="dock-item about" href="/about" data-genie data-label="About" aria-label="About"><svg class="icon" aria-hidden="true"><use href="/icons.svg#person"/></svg></a>
+    <a class="dock-item tile about" href="/about" data-genie data-label="About" aria-label="About"><svg class="icon" aria-hidden="true"><use href="/icons.svg#person"/></svg></a>
     <span class="dock-sep" aria-hidden="true"></span>
-    <a class="dock-item ig" href="https://instagram.com/ivan.sln" target="_blank" rel="noopener" data-label="Instagram" aria-label="Instagram"><svg class="icon" aria-hidden="true"><use href="/icons.svg#ig"/></svg></a>
-    <a class="dock-item x" href="https://x.com/ivxnchis" target="_blank" rel="noopener" data-label="X" aria-label="X"><svg class="icon" aria-hidden="true"><use href="/icons.svg#x"/></svg></a>
-    <a class="dock-item tt" href="https://www.tiktok.com/@ivxnchis" target="_blank" rel="noopener" data-label="TikTok" aria-label="TikTok"><svg class="icon" aria-hidden="true"><use href="/icons.svg#tt"/></svg></a>
-    <button class="dock-item dc" type="button" data-copy="ivxnchis" data-copy-label="Discord username" data-label="Discord · copy username" aria-label="Copy Discord username"><svg class="icon" aria-hidden="true"><use href="/icons.svg#dc"/></svg></button>
-    <a class="dock-item sp" href="https://open.spotify.com/user/ivansolanoc" target="_blank" rel="noopener" data-label="Spotify" aria-label="Spotify"><svg class="icon" aria-hidden="true"><use href="/icons.svg#sp"/></svg></a>
-    <a class="dock-item lb" href="https://letterboxd.com/IVXNCHIS" target="_blank" rel="noopener" data-label="Letterboxd" aria-label="Letterboxd"><svg class="icon" aria-hidden="true"><use href="/icons.svg#lb"/></svg></a>
-    <a class="dock-item wa" href="https://wa.link/rcedvv" target="_blank" rel="noopener" data-label="WhatsApp" aria-label="WhatsApp"><svg class="icon" aria-hidden="true"><use href="/icons.svg#wa"/></svg></a>
+    <a class="dock-item tile ig" href="https://instagram.com/ivan.sln" target="_blank" rel="noopener" data-label="Instagram" aria-label="Instagram"><svg class="icon" aria-hidden="true"><use href="/icons.svg#ig"/></svg></a>
+    <a class="dock-item tile x" href="https://x.com/ivxnchis" target="_blank" rel="noopener" data-label="X" aria-label="X"><svg class="icon" aria-hidden="true"><use href="/icons.svg#x"/></svg></a>
+    <a class="dock-item tile tt" href="https://www.tiktok.com/@ivxnchis" target="_blank" rel="noopener" data-label="TikTok" aria-label="TikTok"><svg class="icon" aria-hidden="true"><use href="/icons.svg#tt"/></svg></a>
+    <button class="dock-item tile dc" type="button" data-copy="ivxnchis" data-copy-label="Discord username" data-label="Discord · copy username" aria-label="Copy Discord username"><svg class="icon" aria-hidden="true"><use href="/icons.svg#dc"/></svg></button>
+    <a class="dock-item tile sp" href="https://open.spotify.com/user/ivansolanoc" target="_blank" rel="noopener" data-label="Spotify" aria-label="Spotify"><svg class="icon" aria-hidden="true"><use href="/icons.svg#sp"/></svg></a>
+    <a class="dock-item tile lb" href="https://letterboxd.com/IVXNCHIS" target="_blank" rel="noopener" data-label="Letterboxd" aria-label="Letterboxd"><svg class="icon" aria-hidden="true"><use href="/icons.svg#lb"/></svg></a>
+    <a class="dock-item tile wa" href="https://wa.link/rcedvv" target="_blank" rel="noopener" data-label="WhatsApp" aria-label="WhatsApp"><svg class="icon" aria-hidden="true"><use href="/icons.svg#wa"/></svg></a>
     <span class="dock-sep" aria-hidden="true"></span>
-    <a class="dock-item mail" href="mailto:reach@ivxnchis.com" data-label="Email" aria-label="Email"><svg class="icon" aria-hidden="true"><use href="/icons.svg#mail"/></svg></a>
+    <a class="dock-item tile mail" href="mailto:reach@ivxnchis.com" data-label="Email" aria-label="Email"><svg class="icon" aria-hidden="true"><use href="/icons.svg#mail"/></svg></a>
   </nav>
 </div>
 
 <!-- Spotlight Search -->
 <div id="spotlight" role="dialog" aria-modal="true" aria-label="Spotlight Search" inert>
   <div class="spotlight-box">
-    <div class="spotlight-input-wrap">
+    <div class="spotlight-input-wrap glass strong">
       <svg class="icon" width="18" height="18" aria-hidden="true"><use href="/icons.svg#search"/></svg>
       <input type="text" id="spotlightInput" placeholder="Spotlight Search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
              role="combobox" aria-expanded="true" aria-controls="spotlightResults" aria-autocomplete="list" aria-label="Search">
       <span class="spotlight-kbd"><kbd>esc</kbd> to close</span>
     </div>
-    <div class="spotlight-results" id="spotlightResults" role="listbox" aria-label="Results"></div>
+    <div class="spotlight-results glass strong" id="spotlightResults" role="listbox" aria-label="Results"></div>
   </div>
 </div>
 
@@ -1120,10 +1120,10 @@
 <aside id="notifCenter" role="dialog" aria-labelledby="nc-title" inert>
   <div class="nc-header">
     <h2 id="nc-title">Notification Center</h2>
-    <button type="button" class="nc-close" id="ncClose" aria-label="Close Notification Center">×</button>
+    <button type="button" class="nc-close glass-btn icon-only" id="ncClose" aria-label="Close Notification Center">×</button>
   </div>
   <div class="nc-content">
-    <div class="nc-widget" id="weatherWidget" hidden>
+    <div class="nc-widget glass strong" id="weatherWidget" hidden>
       <div class="nc-weather">
         <div>
           <div class="temp" id="wxTemp">—</div>
@@ -1131,28 +1131,42 @@
         </div>
         <div>
           <div class="cond" id="wxCond">Loading weather…</div>
-          <div class="cond" id="wxRange"></div>
+          <div class="range" id="wxRange"></div>
         </div>
       </div>
     </div>
-    <div class="nc-widget">
+    <div class="nc-widget glass strong">
       <h3>Now</h3>
       <p>🟢 Open to opportunities</p>
       <div class="nc-time">Customer Service Supervisor at Anj of Gold</div>
     </div>
-    <div class="nc-widget">
+    <div class="nc-widget glass strong">
       <h3>Quick Actions</h3>
       <div class="nc-actions">
-        <button type="button" data-nc-action="spotlight">Spotlight</button>
-        <button type="button" data-nc-action="mission">Mission Control</button>
-        <button type="button" data-nc-action="email">Email</button>
+        <button type="button" class="glass-btn" data-nc-action="spotlight">Spotlight</button>
+        <button type="button" class="glass-btn" data-nc-action="mission">Mission Control</button>
+        <button type="button" class="glass-btn" data-nc-action="email">Email</button>
+      </div>
+    </div>
+    <div class="nc-widget glass strong">
+      <h3>Appearance</h3>
+      <div class="segmented" role="radiogroup" aria-label="Theme">
+        <button type="button" role="radio" data-theme-set="light">Light</button>
+        <button type="button" role="radio" data-theme-set="dark">Dark</button>
+        <button type="button" role="radio" data-theme-set="auto">Auto</button>
+      </div>
+      <label class="tint-label" for="glassTint">Liquid Glass <output id="glassTintOut" for="glassTint"></output></label>
+      <div class="tint-row">
+        <span aria-hidden="true">Clear</span>
+        <input type="range" id="glassTint" min="0" max="100" step="1" aria-valuetext="">
+        <span aria-hidden="true">Tinted</span>
       </div>
     </div>
   </div>
 </aside>
 
 <!-- Context Menu -->
-<div id="contextMenu" role="menu" aria-label="Desktop" inert>
+<div id="contextMenu" class="glass strong" role="menu" aria-label="Desktop" inert>
   <button type="button" role="menuitem" class="ctx-item" data-action="refresh">Refresh <span class="ctx-shortcut">⌘R</span></button>
   <div class="ctx-sep" role="separator"></div>
   <button type="button" role="menuitem" class="ctx-item" data-action="spotlight">Spotlight Search <span class="ctx-shortcut">⌘K</span></button>

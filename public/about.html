@@ -27,7 +27,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
 <script>
-  (function(d){ try{ var t = localStorage.getItem('theme'); if(t === 'light' || t === 'dark') d.dataset.theme = t; }catch(e){} })(document.documentElement);
+  (function(d){
+    try{ var t = localStorage.getItem('theme'); if(t === 'light' || t === 'dark') d.dataset.theme = t; }catch(e){}
+    try{ var g = parseFloat(localStorage.getItem('glassTint')); if(g >= 0 && g <= 1) d.style.setProperty('--glass-tint', g); }catch(e){}
+  })(document.documentElement);
 </script>
 <style>
   main{
@@ -111,7 +114,7 @@
   <a class="back-link" href="/">&larr; Back to home</a>
 
   <div class="hero">
-    <div class="avatar-ring" aria-hidden="true">IS</div>
+    <div class="avatar-ring tile" aria-hidden="true">IS</div>
     <h1>About Ivan</h1>
     <p class="subtitle">The story behind IVXNCHIS</p>
   </div>
@@ -176,18 +179,18 @@
 <footer>&copy; <span id="year"></span> ivxnchis.com</footer>
 
 <div class="dock-wrap">
-  <nav class="dock" aria-label="Dock">
-    <a class="dock-item home" href="/" data-genie data-label="Home" aria-label="Home"><svg class="icon" aria-hidden="true"><use href="/icons.svg#home"/></svg></a>
+  <nav class="dock glass" aria-label="Dock">
+    <a class="dock-item tile home" href="/" data-genie data-label="Home" aria-label="Home"><svg class="icon" aria-hidden="true"><use href="/icons.svg#home"/></svg></a>
     <span class="dock-sep" aria-hidden="true"></span>
-    <a class="dock-item ig" href="https://instagram.com/ivan.sln" target="_blank" rel="noopener" data-label="Instagram" aria-label="Instagram"><svg class="icon" aria-hidden="true"><use href="/icons.svg#ig"/></svg></a>
-    <a class="dock-item x" href="https://x.com/ivxnchis" target="_blank" rel="noopener" data-label="X" aria-label="X"><svg class="icon" aria-hidden="true"><use href="/icons.svg#x"/></svg></a>
-    <a class="dock-item tt" href="https://www.tiktok.com/@ivxnchis" target="_blank" rel="noopener" data-label="TikTok" aria-label="TikTok"><svg class="icon" aria-hidden="true"><use href="/icons.svg#tt"/></svg></a>
-    <button class="dock-item dc" type="button" data-copy="ivxnchis" data-copy-label="Discord username" data-label="Discord · copy username" aria-label="Copy Discord username"><svg class="icon" aria-hidden="true"><use href="/icons.svg#dc"/></svg></button>
-    <a class="dock-item sp" href="https://open.spotify.com/user/ivansolanoc" target="_blank" rel="noopener" data-label="Spotify" aria-label="Spotify"><svg class="icon" aria-hidden="true"><use href="/icons.svg#sp"/></svg></a>
-    <a class="dock-item lb" href="https://letterboxd.com/IVXNCHIS" target="_blank" rel="noopener" data-label="Letterboxd" aria-label="Letterboxd"><svg class="icon" aria-hidden="true"><use href="/icons.svg#lb"/></svg></a>
-    <a class="dock-item wa" href="https://wa.link/rcedvv" target="_blank" rel="noopener" data-label="WhatsApp" aria-label="WhatsApp"><svg class="icon" aria-hidden="true"><use href="/icons.svg#wa"/></svg></a>
+    <a class="dock-item tile ig" href="https://instagram.com/ivan.sln" target="_blank" rel="noopener" data-label="Instagram" aria-label="Instagram"><svg class="icon" aria-hidden="true"><use href="/icons.svg#ig"/></svg></a>
+    <a class="dock-item tile x" href="https://x.com/ivxnchis" target="_blank" rel="noopener" data-label="X" aria-label="X"><svg class="icon" aria-hidden="true"><use href="/icons.svg#x"/></svg></a>
+    <a class="dock-item tile tt" href="https://www.tiktok.com/@ivxnchis" target="_blank" rel="noopener" data-label="TikTok" aria-label="TikTok"><svg class="icon" aria-hidden="true"><use href="/icons.svg#tt"/></svg></a>
+    <button class="dock-item tile dc" type="button" data-copy="ivxnchis" data-copy-label="Discord username" data-label="Discord · copy username" aria-label="Copy Discord username"><svg class="icon" aria-hidden="true"><use href="/icons.svg#dc"/></svg></button>
+    <a class="dock-item tile sp" href="https://open.spotify.com/user/ivansolanoc" target="_blank" rel="noopener" data-label="Spotify" aria-label="Spotify"><svg class="icon" aria-hidden="true"><use href="/icons.svg#sp"/></svg></a>
+    <a class="dock-item tile lb" href="https://letterboxd.com/IVXNCHIS" target="_blank" rel="noopener" data-label="Letterboxd" aria-label="Letterboxd"><svg class="icon" aria-hidden="true"><use href="/icons.svg#lb"/></svg></a>
+    <a class="dock-item tile wa" href="https://wa.link/rcedvv" target="_blank" rel="noopener" data-label="WhatsApp" aria-label="WhatsApp"><svg class="icon" aria-hidden="true"><use href="/icons.svg#wa"/></svg></a>
     <span class="dock-sep" aria-hidden="true"></span>
-    <a class="dock-item mail" href="mailto:reach@ivxnchis.com" data-label="Email" aria-label="Email"><svg class="icon" aria-hidden="true"><use href="/icons.svg#mail"/></svg></a>
+    <a class="dock-item tile mail" href="mailto:reach@ivxnchis.com" data-label="Email" aria-label="Email"><svg class="icon" aria-hidden="true"><use href="/icons.svg#mail"/></svg></a>
   </nav>
 </div>
 
