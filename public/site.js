@@ -35,18 +35,65 @@
   ivx.currentTheme = function(){
     return root.dataset.theme || (systemDark.matches ? 'dark' : 'light');
   };
+  // mode: 'light', 'dark', or 'auto' (follow the system)
+  ivx.setTheme = function(mode){
+    try{
+      if(mode === 'auto'){ localStorage.removeItem('theme'); }
+      else { localStorage.setItem('theme', mode); }
+    }catch(e){}
+    if(mode === 'auto'){ delete root.dataset.theme; }
+    else { root.dataset.theme = mode; }
+  };
+  ivx.themeMode = function(){ return root.dataset.theme || 'auto'; };
   ivx.toggleTheme = function(){
     var next = ivx.currentTheme() === 'dark' ? 'light' : 'dark';
-    var system = systemDark.matches ? 'dark' : 'light';
     // Picking the same theme as the system means "follow the system" again.
-    try{
-      if(next === system){ localStorage.removeItem('theme'); }
-      else { localStorage.setItem('theme', next); }
-    }catch(e){}
-    if(next === system){ delete root.dataset.theme; }
-    else { root.dataset.theme = next; }
+    ivx.setTheme(next === (systemDark.matches ? 'dark' : 'light') ? 'auto' : next);
     return next;
   };
+
+  /* ---------------- Liquid Glass tint (0 = clear, 1 = tinted) ---------------- */
+  ivx.glassTint = function(){
+    var v = parseFloat(getComputedStyle(root).getPropertyValue('--glass-tint'));
+    return isNaN(v) ? 0.4 : v;
+  };
+  ivx.setGlassTint = function(v){
+    v = Math.max(0, Math.min(1, v));
+    root.style.setProperty('--glass-tint', v);
+    try{ localStorage.setItem('glassTint', String(v)); }catch(e){}
+  };
+
+  /* ---------------- Specular highlight follows the pointer ---------------- */
+  if(!reduceMotion && window.matchMedia('(hover: hover) and (pointer: fine)').matches){
+    var lastGlass = null, pending = null, queued = false;
+    document.addEventListener('pointermove', function(e){
+      pending = e;
+      if(queued) return;
+      queued = true;
+      requestAnimationFrame(function(){
+        queued = false;
+        var ev = pending;
+        var el = ev.target.closest && ev.target.closest('.glass');
+        if(lastGlass && lastGlass !== el){
+          lastGlass.style.removeProperty('--mx');
+          lastGlass.style.removeProperty('--my');
+        }
+        lastGlass = el;
+        if(!el) return;
+        var r = el.getBoundingClientRect();
+        el.style.setProperty('--mx', ((ev.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+        el.style.setProperty('--my', ((ev.clientY - r.top) / r.height * 100).toFixed(1) + '%');
+      });
+    }, { passive: true });
+  }
+
+  /* ---------------- Menu bar frosts over once content scrolls under it ---------------- */
+  var menubar = document.querySelector('.menubar');
+  if(menubar){
+    var syncMenubar = function(){ menubar.classList.toggle('scrolled', window.scrollY > 4); };
+    window.addEventListener('scroll', syncMenubar, { passive: true });
+    syncMenubar();
+  }
 
   /* ---------------- Toast ---------------- */
   var toastEl, toastTimer;
