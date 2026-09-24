@@ -88,12 +88,13 @@
   }
 
   /* ---------------- Menu bar frosts over once content scrolls under it ---------------- */
+  // (also solid while a window is zoomed to full screen underneath it)
   var menubar = document.querySelector('.menubar');
-  if(menubar){
-    var syncMenubar = function(){ menubar.classList.toggle('scrolled', window.scrollY > 4); };
-    window.addEventListener('scroll', syncMenubar, { passive: true });
-    syncMenubar();
-  }
+  ivx.syncMenubar = function(){
+    if(menubar) menubar.classList.toggle('scrolled', window.scrollY > 4 || root.classList.contains('has-zoomed-window'));
+  };
+  window.addEventListener('scroll', ivx.syncMenubar, { passive: true });
+  ivx.syncMenubar();
 
   /* ---------------- Toast ---------------- */
   var toastEl, toastTimer;
@@ -140,20 +141,21 @@
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   }
 
-  function genieCollapseInto(iconEl, onDone){
-    var t = center(iconEl);
-    pieces().forEach(function(el){
+  // Generic genie: shrink elements into a target (e.g. a Dock icon), or grow
+  // them back out of it. Also used by desktop.js to minimize windows.
+  function genieCollapse(els, targetEl, onDone){
+    var t = center(targetEl);
+    els.forEach(function(el){
       var c = center(el);
       el.style.transition = 'transform 0.38s cubic-bezier(0.4,0,0.65,1), opacity 0.32s ease';
       el.style.transform = 'translate(' + (t.x - c.x) + 'px,' + (t.y - c.y) + 'px) scale(0.04)';
       el.style.opacity = '0';
     });
-    setTimeout(onDone, 380);
+    setTimeout(onDone, reduceMotion ? 0 : 380);
   }
 
-  function genieExpandFrom(iconEl){
-    var o = center(iconEl);
-    var els = pieces();
+  function genieExpand(els, fromEl, onDone){
+    var o = center(fromEl);
     els.forEach(function(el){
       var c = center(el);
       el.style.transition = 'none';
@@ -168,22 +170,28 @@
           el.style.opacity = '';
         });
         // hand transitions back to the stylesheet once the animation is done
-        setTimeout(resetPieces, 460);
+        setTimeout(function(){
+          resetStyles(els);
+          if(onDone) onDone();
+        }, 460);
       });
     });
   }
 
-  function resetPieces(){
-    pieces().forEach(function(el){
+  function resetStyles(els){
+    els.forEach(function(el){
       el.style.transition = el.style.transform = el.style.opacity = '';
     });
   }
+  function resetPieces(){ resetStyles(pieces()); }
+
+  ivx.genie = { collapse: genieCollapse, expand: genieExpand, reset: resetStyles };
 
   document.querySelectorAll('.dock-item[data-genie]').forEach(function(icon){
     icon.addEventListener('click', function(e){
       if(reduceMotion || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
       e.preventDefault();
-      genieCollapseInto(icon, function(){
+      genieCollapse(pieces(), icon, function(){
         try{ sessionStorage.setItem('ivxNav', location.pathname); }catch(err){}
         window.location.href = icon.getAttribute('href');
       });
@@ -203,7 +211,7 @@
         .filter(function(a){ return a.pathname === cameFrom || a.pathname === cameFrom.replace(/\.html$/, ''); })[0];
       if(!icon) return;
       requestAnimationFrame(function(){
-        requestAnimationFrame(function(){ genieExpandFrom(icon); });
+        requestAnimationFrame(function(){ genieExpand(pieces(), icon); });
       });
     });
   }
