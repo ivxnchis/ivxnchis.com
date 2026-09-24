@@ -1,32 +1,19 @@
 /* Home page: desktop windowing, boot screen, Spotlight, Mission Control,
-   Notification Center, and the right-click menu. Uses helpers from site.js. */
+   Notification Center, and the right-click menu. Uses helpers from site.js
+   and the window manager (ivx.wm) from desktop.js. */
 (function(){
   var ivx = window.ivx;
+  var wm = ivx.wm;
   var root = document.documentElement;
   var main = document.querySelector('main');
-  var windows = Array.prototype.slice.call(document.querySelectorAll('main .window'));
+  var windows = wm.windows;
   var desktopModeActive = false;
-  var zCounter = 10;
+  var layoutWindows = function(){};
 
-  function bringToFront(win){
-    zCounter++;
-    win.style.zIndex = zCounter;
-  }
-
-  function setActiveWindow(win){
-    windows.forEach(function(w){ w.classList.toggle('window-active', w === win); });
-  }
-
-  // Shared by the desktop icons, Spotlight, Mission Control and the context menu.
+  // Shared by the desktop icons, Spotlight, Mission Control and the context
+  // menu: opens a closed window, restores a minimized one, or brings it forward.
   function focusWindow(id){
-    var win = document.getElementById(id);
-    if(!win) return;
-    if(desktopModeActive){
-      bringToFront(win);
-      setActiveWindow(win);
-    } else {
-      win.scrollIntoView({ behavior: ivx.reduceMotion ? 'auto' : 'smooth', block: 'start' });
-    }
+    wm.show(document.getElementById(id));
   }
 
   document.querySelectorAll('.desktop-icon').forEach(function(btn){
@@ -48,7 +35,7 @@
       main.style.minHeight = (maxBottom + 40) + 'px';
     }
 
-    function layoutWindows(){
+    layoutWindows = function(){
       var resume = document.getElementById('resume');
       var links = document.getElementById('links');
       var contact = document.getElementById('contact');
@@ -79,25 +66,27 @@
         resume.style.top = topY + 'px';
         resume.style.width = resumeWidth + 'px';
         resume.style.height = availableH + 'px';
-        bringToFront(resume);
+        wm.bringToFront(resume);
 
         // Links: natural height, stacked above Contact in the right-hand column.
         links.style.left = (padL + resumeWidth + gap) + 'px';
         links.style.top = topY + 'px';
         links.style.width = linksWidth + 'px';
-        bringToFront(links);
+        wm.bringToFront(links);
 
         requestAnimationFrame(function(){
           var linksBottom = links.offsetTop + links.offsetHeight;
           contact.style.left = (padL + resumeWidth + gap) + 'px';
           contact.style.top = (linksBottom + 24) + 'px';
           contact.style.width = linksWidth + 'px';
-          bringToFront(contact);
-          setActiveWindow(resume); // the resume is the main document
+          wm.bringToFront(contact);
+          // start on the window named in the URL (e.g. /#links), else the resume
+          var initial = wm.byId(location.hash.slice(1));
+          wm.focus(initial && wm.state(initial) === 'open' ? initial : resume, { noScroll: true });
           updateCanvasHeight();
         });
       });
-    }
+    };
 
     function clearLayout(){
       windows.forEach(function(w){
@@ -123,20 +112,21 @@
     }
 
     windows.forEach(function(win){
-      win.addEventListener('pointerdown', function(){
-        if(!desktopModeActive) return;
-        bringToFront(win);
-        setActiveWindow(win);
-      });
-
       var header = win.querySelector('.window-header');
       header.addEventListener('pointerdown', function(e){
         // toolbar buttons are clickable, not drag handles
         if(!desktopModeActive || e.button !== 0 || e.target.closest('a, button')) return;
         e.preventDefault();
-        win.classList.add('dragging');
         var startLeft = win.offsetLeft, startTop = win.offsetTop;
+        var moved = false;
         track(e, function(dx, dy){
+          // a plain click (or the first half of a double-click) isn't a drag
+          if(!moved){
+            if(Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+            moved = true;
+            wm.clearZoom(win);
+            win.classList.add('dragging');
+          }
           var maxLeft = Math.max(0, main.clientWidth - win.offsetWidth);
           win.style.left = Math.max(0, Math.min(startLeft + dx, maxLeft)) + 'px';
           win.style.top = Math.max(0, startTop + dy) + 'px';
@@ -148,10 +138,10 @@
         if(!desktopModeActive || e.button !== 0) return;
         e.preventDefault();
         e.stopPropagation();
-        bringToFront(win);
-        setActiveWindow(win);
+        wm.focus(win, { noScroll: true });
         var startW = win.offsetWidth, startH = win.offsetHeight;
         track(e, function(dx, dy){
+          wm.clearZoom(win);
           win.style.width = Math.max(280, startW + dx) + 'px';
           win.style.height = Math.max(200, startH + dy) + 'px';
         });
@@ -160,6 +150,7 @@
 
     function syncMode(){
       var shouldBeDesktop = window.innerWidth >= BREAKPOINT;
+      if(shouldBeDesktop !== desktopModeActive) wm.resetZoom();
       if(shouldBeDesktop && !desktopModeActive){
         desktopModeActive = true;
         document.body.classList.add('desktop-mode');
@@ -265,6 +256,7 @@
 
   function closeAll(){
     Object.keys(layers).forEach(function(name){ closeLayer(name, false); });
+    if(ivx.menubar) ivx.menubar.close(false);
   }
 
   // Keep Tab inside modal layers while they're open.
@@ -381,11 +373,13 @@
   function buildThumbs(){
     mcBar.innerHTML = '';
     windows.forEach(function(w){
-      var title = (w.querySelector('.window-title') || {}).textContent || 'Window';
+      var title = wm.title(w);
+      var st = wm.state(w);
+      var note = st === 'closed' ? ' (Closed)' : st === 'minimized' ? ' (Minimized)' : '';
       var thumb = document.createElement('button');
       thumb.type = 'button';
-      thumb.className = 'mc-thumb';
-      thumb.setAttribute('aria-label', 'Focus ' + title);
+      thumb.className = 'mc-thumb' + (st !== 'open' ? ' mc-hidden' : '');
+      thumb.setAttribute('aria-label', (st === 'open' ? 'Focus ' : st === 'closed' ? 'Open ' : 'Restore ') + title);
       thumb.innerHTML =
         '<span class="mc-header" aria-hidden="true"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></span>' +
         '<span class="mc-preview" aria-hidden="true"><strong></strong></span>' +
@@ -394,7 +388,7 @@
       thumb.querySelector('.mc-preview').appendChild(document.createTextNode(
         w.querySelector('.doc-page') ? 'Document preview…' : w.id === 'links' ? 'List view…' : 'Note…'
       ));
-      thumb.querySelector('.mc-label').textContent = title;
+      thumb.querySelector('.mc-label').textContent = title + note;
       thumb.addEventListener('click', function(){ openAndFocusWindow(w.id); });
       mcBar.appendChild(thumb);
     });
@@ -572,10 +566,23 @@
         case 'resume':
         case 'links':
         case 'contact': focusWindow(action); break;
+        case 'showall': wm.showAll(); break;
         case 'theme': ivx.toggleTheme(); break;
       }
     });
   });
+
+  /* Hooks for the menu bar (desktop.js) */
+  ivx.home = {
+    openSpotlight: function(){ closeAll(); openSpotlight(); },
+    openMissionControl: function(){ closeAll(); openMissionControl(); },
+    openNotif: function(){ closeAll(); openNotif(); },
+    resetLayout: function(){
+      wm.resetZoom();
+      wm.showAll();
+      if(desktopModeActive) layoutWindows();
+    }
+  };
 
   /* ===================== KEYBOARD ===================== */
   document.addEventListener('keydown', function(e){

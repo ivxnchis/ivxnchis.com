@@ -96,13 +96,13 @@
 <body data-genie="main .window, .hero, .back-link">
 
 <header class="menubar">
-  <div class="menubar-left">
-    <span class="brand"><a href="/">IVXNCHIS</a></span>
-    <span class="menu-item" aria-hidden="true">File</span>
-    <span class="menu-item" aria-hidden="true">Edit</span>
-    <span class="menu-item" aria-hidden="true">View</span>
-    <span class="menu-item" aria-hidden="true">Window</span>
-    <span class="menu-item" aria-hidden="true">Help</span>
+  <div class="menubar-left" role="menubar" aria-label="Menu bar">
+    <button type="button" class="brand menu-title" id="mb-brand" data-menu="brand" role="menuitem" aria-haspopup="menu" aria-expanded="false">IVXNCHIS</button>
+    <button type="button" class="menu-item menu-title" id="mb-file" data-menu="file" role="menuitem" aria-haspopup="menu" aria-expanded="false" tabindex="-1">File</button>
+    <button type="button" class="menu-item menu-title" id="mb-edit" data-menu="edit" role="menuitem" aria-haspopup="menu" aria-expanded="false" tabindex="-1">Edit</button>
+    <button type="button" class="menu-item menu-title" id="mb-view" data-menu="view" role="menuitem" aria-haspopup="menu" aria-expanded="false" tabindex="-1">View</button>
+    <button type="button" class="menu-item menu-title" id="mb-window" data-menu="window" role="menuitem" aria-haspopup="menu" aria-expanded="false" tabindex="-1">Window</button>
+    <button type="button" class="menu-item menu-title" id="mb-help" data-menu="help" role="menuitem" aria-haspopup="menu" aria-expanded="false" tabindex="-1">Help</button>
   </div>
   <div class="menubar-right">
     <span class="loc-text">Bucaramanga, CO</span>
@@ -119,9 +119,9 @@
     <p class="subtitle">The story behind IVXNCHIS</p>
   </div>
 
-  <section class="window" aria-labelledby="about-title">
+  <section class="window" id="about-window" aria-labelledby="about-title" data-app-icon="doc" data-app-tile="about">
     <div class="window-header">
-      <div class="traffic" aria-hidden="true"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+      <div class="traffic"><button type="button" class="r" data-win="close" aria-label="Close"></button><button type="button" class="y" data-win="minimize" aria-label="Minimize"></button><button type="button" class="g" data-win="zoom" aria-label="Zoom"></button></div>
       <p class="window-title" id="about-title">About.txt — TextEdit</p>
     </div>
 
@@ -195,5 +195,6 @@
 </div>
 
 <script src="/site.js"></script>
+<script src="/desktop.js"></script>
 </body>
 </html>

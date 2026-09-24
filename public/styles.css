@@ -30,6 +30,7 @@
   --yellow: #febc2e;
   --green: #28c840;
   --status-green: #1a9e33;
+  --traffic-off: #cfcfd4;
 
   /* one consistent corner radius family, as in macOS 27 */
   --r-window: 20px;
@@ -64,6 +65,7 @@
   --scroll-thumb: rgba(255,255,255,0.2);
   --scroll-thumb-hover: rgba(255,255,255,0.32);
   --status-green: #30d158;
+  --traffic-off: #55555b;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -84,6 +86,7 @@
     --scroll-thumb: rgba(255,255,255,0.2);
     --scroll-thumb-hover: rgba(255,255,255,0.32);
     --status-green: #30d158;
+    --traffic-off: #55555b;
   }
 }
 /* System "Reduce transparency" wins over the slider */
@@ -231,21 +234,29 @@ a:focus-visible, button:focus-visible, input:focus-visible{
 .menubar-left{ display:flex; align-items:center; gap:0.2rem; }
 .menubar-left .brand{ font-weight:700; }
 .menubar-left .brand a{ color:inherit; text-decoration:none; }
-.menubar-left .menu-item{ display:none; opacity:0.9; }
-.menubar-left .menu-item,
-.menubar-left .brand{
+.menubar-left .menu-item{ display:none; }
+.menu-title{
   padding: 0.22rem 0.6rem;
+  border: 0;
   border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-shadow: inherit;
+  line-height: 1.2;
   cursor: default;
   transition: background 0.12s ease;
 }
-.menubar-left .menu-item:hover,
-.menubar-left .brand:hover{ background: rgba(255,255,255,0.2); }
-.menubar.scrolled .menubar-left .menu-item:hover,
-.menubar.scrolled .menubar-left .brand:hover{ background: var(--hover); }
+.menu-title:hover{ background: rgba(255,255,255,0.2); }
+.menu-title.open{ background: rgba(255,255,255,0.3); }
+.menubar.scrolled .menu-title:hover{ background: var(--hover); }
+.menubar.scrolled .menu-title.open{ background: var(--accent-soft); }
+.menu-title:focus-visible{ outline: 2px solid currentColor; outline-offset: 0; border-radius: 999px; }
+/* phones keep the brand and Window menus */
+.menubar-left .menu-item[data-menu="window"]{ display:inline-block; }
 .menubar-right{ display:flex; align-items:center; gap:0.7rem; white-space:nowrap; padding-right:0.4rem; }
 @media (min-width:640px){
-  .menubar-left .menu-item{ display:inline; }
+  .menubar-left .menu-item{ display:inline-block; }
 }
 @media (max-width:420px){
   .menubar{ font-size:0.74rem; }
@@ -284,6 +295,31 @@ a:focus-visible, button:focus-visible, input:focus-visible{
   margin-bottom: 2.6rem;
   position:relative;
 }
+/* keep windows clear of the sticky menu bar when scrolled to */
+.window{ scroll-margin-top: 48px; }
+.window[hidden]{ display:none !important; }
+@keyframes win-closing{ to{ opacity:0; transform:scale(0.94); } }
+@keyframes win-opening{ from{ opacity:0; transform:scale(0.94); } }
+.window.win-closing{ animation: win-closing 0.18s ease-in forwards; pointer-events:none; }
+.window.win-opening{ animation: win-opening 0.26s cubic-bezier(0.2,0.9,0.3,1.2); }
+/* Zoom on phones and single-window pages: fill the screen under the menu bar */
+body:not(.desktop-mode) .window.is-zoomed{
+  position:fixed;
+  inset:34px 0 0 0;
+  z-index:25 !important;
+  margin:0;
+  border-radius:0;
+  overflow-y:auto;
+  padding-bottom:6.5rem; /* room to scroll content clear of the Dock */
+}
+body:not(.desktop-mode) .window.is-zoomed .window-header{
+  position:sticky;
+  top:0;
+  z-index:5;
+  border-radius:0;
+}
+html.has-zoomed-window, html.has-zoomed-window body{ overflow:hidden; }
+
 /* overlay-style scrollbar */
 .window::-webkit-scrollbar{ width: 8px; height: 8px; }
 .window::-webkit-scrollbar-track{ background: transparent; }
@@ -312,19 +348,31 @@ a:focus-visible, button:focus-visible, input:focus-visible{
 }
 .toolbar-actions{ margin-left:auto; display:flex; gap:0.4rem; position:relative; z-index:1; }
 .traffic{ display:flex; gap:8px; position:relative; z-index:1; }
-.traffic span{
+.traffic button{
   position:relative;
   width:12px; height:12px;
+  padding:0;
+  border:0;
   border-radius:50%;
   display:inline-block;
+  cursor:default;
   box-shadow:
     inset 0 0 0 0.5px rgba(0,0,0,0.12),
     inset 0 1px 1px rgba(255,255,255,0.45);
 }
+/* a bigger invisible hit area for fingers */
+.traffic button::after{ content:''; position:absolute; inset:-6px -4px; }
+.traffic button:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:50%; }
 .traffic .r{ background:var(--red); }
 .traffic .y{ background:var(--yellow); }
 .traffic .g{ background:var(--green); }
-.traffic span::before{
+.traffic button:disabled{ background:var(--traffic-off); }
+/* background windows show grey lights until you point at them */
+body.desktop-mode .window:not(.window-active) .traffic button{ background:var(--traffic-off); }
+body.desktop-mode .window:not(.window-active) .traffic:hover .r{ background:var(--red); }
+body.desktop-mode .window:not(.window-active) .traffic:hover .y{ background:var(--yellow); }
+body.desktop-mode .window:not(.window-active) .traffic:hover .g{ background:var(--green); }
+.traffic button::before{
   position: absolute;
   inset: 0;
   display: flex;
@@ -340,7 +388,9 @@ a:focus-visible, button:focus-visible, input:focus-visible{
 .traffic .r::before{ content: '×'; }
 .traffic .y::before{ content: '−'; }
 .traffic .g::before{ content: '⤢'; font-size: 6px; }
-.window-header:hover .traffic span::before{ opacity: 1; }
+.traffic:hover button:not(:disabled)::before,
+.traffic:focus-within button:not(:disabled)::before{ opacity: 1; }
+.window.is-zoomed .traffic .g::before{ content: '⤡'; }
 .window-title{
   position:absolute;
   left:50%;
@@ -513,8 +563,136 @@ footer{
   white-space:nowrap;
 }
 
+/* ---------------- Menu bar dropdowns ---------------- */
+.mb-menu.glass{
+  position:fixed;
+  z-index:96;
+  min-width:230px;
+  max-width:calc(100vw - 16px);
+  max-height:calc(100vh - 60px);
+  overflow-y:auto;
+  padding:0.35rem;
+  border-radius:var(--r-menu);
+  font-size:0.86rem;
+  outline:none;
+  animation: mb-in 0.12s ease-out;
+}
+@keyframes mb-in{ from{ opacity:0; transform:translateY(-4px); } }
+.mb-item{
+  display:flex;
+  align-items:center;
+  gap:0.25rem;
+  width:100%;
+  padding:0.3rem 0.65rem 0.3rem 0.3rem;
+  border:0;
+  border-radius:var(--r-item);
+  background:none;
+  color:var(--ink);
+  font:inherit;
+  text-align:left;
+  white-space:nowrap;
+  cursor:default;
+}
+.mb-item:focus{ background:var(--accent); color:#fff; outline:none; }
+.mb-item[aria-disabled="true"]{ color:var(--ink-soft); opacity:0.55; }
+.mb-check{ width:1.15rem; flex-shrink:0; text-align:center; font-size:0.78rem; }
+.mb-label{ flex:1; }
+.mb-shortcut{ margin-left:1.6rem; color:var(--ink-soft); font-size:0.78rem; }
+.mb-item:focus .mb-shortcut{ color:rgba(255,255,255,0.8); }
+.mb-sep{ height:1px; background:var(--hair); margin:0.3rem 0.65rem; }
+
+/* ---------------- Minimized windows in the Dock ---------------- */
+.dock-min{
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:space-between;
+  padding:6px;
+  background:var(--window-bg);
+  box-shadow:
+    inset 0 1px 0 var(--glass-hi),
+    inset 0 0 0 0.5px var(--glass-edge),
+    0 6px 14px rgba(0,0,0,0.2);
+  transition: transform 0.22s cubic-bezier(0.34,1.4,0.64,1), opacity 0.2s ease;
+}
+.dock-min-enter{ transform:scale(0.3); opacity:0; }
+.dock-min-bar{ display:flex; gap:2px; }
+.dock-min-bar i{ width:4px; height:4px; border-radius:50%; background:var(--red); }
+.dock-min-bar i:nth-child(2){ background:var(--yellow); }
+.dock-min-bar i:nth-child(3){ background:var(--green); }
+.dock-min-badge{
+  align-self:flex-end;
+  display:flex; align-items:center; justify-content:center;
+  width:22px; height:22px;
+  border-radius:6px;
+  color:#fff;
+}
+.dock-item .dock-min-badge .icon{ width:13px; height:13px; }
+@media (max-width:480px){
+  .dock-min{ padding:4px; }
+  .dock-min-badge{ width:18px; height:18px; border-radius:5px; }
+  .dock-item .dock-min-badge .icon{ width:11px; height:11px; }
+}
+
+/* ---------------- Dialogs (About This Site, Keyboard Shortcuts) ---------------- */
+.dlg-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:110;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:1rem;
+  background:rgba(10,15,35,0.2);
+  animation: dlg-fade 0.15s ease-out;
+}
+@keyframes dlg-fade{ from{ opacity:0; } }
+@keyframes dlg-in{ from{ opacity:0; transform:scale(0.92); } }
+.dlg.glass{
+  width:min(360px, 100%);
+  max-height:calc(100vh - 2rem);
+  overflow-y:auto;
+  padding:1rem 1.4rem 1.3rem;
+  border-radius:var(--r-window);
+  color:var(--ink);
+  text-align:center;
+  animation: dlg-in 0.24s cubic-bezier(0.34,1.3,0.64,1);
+}
+.dlg.dlg-wide{ width:min(460px, 100%); }
+.dlg .traffic{ margin-bottom:0.4rem; }
+/* extra specificity beats the home page's compact desktop avatar rule */
+.dlg .dlg-icon.avatar-ring{ width:84px; height:84px; border-radius:20px; font-size:1.5rem; margin:0.3rem auto 0.9rem; }
+.dlg h2{ margin:0; font-size:1.3rem; font-weight:800; letter-spacing:-0.01em; }
+.dlg-sub{ margin:0.2rem 0 1.1rem; color:var(--ink-soft); font-size:0.82rem; }
+.dlg dl{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:0.35rem 0.9rem;
+  margin:0 0 1.3rem;
+  text-align:left;
+  font-size:0.82rem;
+}
+.dlg dt{ color:var(--ink-soft); text-align:right; white-space:nowrap; }
+.dlg dd{ margin:0; }
+.dlg .dlg-keys dt{ color:var(--ink); }
+.dlg .dlg-keys dd{ color:var(--ink-soft); }
+.dlg-buttons{ display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; }
+.glass-btn.primary{ background:var(--accent); color:#fff; }
+.glass-btn.primary:hover{ background:var(--accent); filter:brightness(1.08); }
+
+kbd{
+  display:inline-block;
+  min-width:1.4em;
+  background: var(--hover);
+  padding: 0.05rem 0.35rem;
+  border-radius: 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  text-align:center;
+}
+
 @media (prefers-reduced-motion: reduce){
   html{ scroll-behavior:auto; }
+  .mb-menu.glass, .dlg.glass, .dlg-backdrop{ animation:none; }
   .dock-item, .toast, .glass-btn, .menubar{ transition:none; }
   .dock-item:hover{ transform:none; }
 }
