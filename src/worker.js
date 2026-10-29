@@ -8,6 +8,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === '/api/last-watched') return lastWatched(request, ctx);
+    if (url.pathname === '/api/now-playing') return nowPlaying(request, env, ctx);
     return env.ASSETS.fetch(request);
   }
 };
@@ -64,6 +65,85 @@ function parseLatestFilm(xml) {
     // the feed links a 600×900 poster; the widget only needs a small one
     poster: poster.replace(/-0-600-0-900-crop/, '-0-150-0-225-crop'),
     url: tag('link')
+  };
+}
+
+/* ---------------- Now playing (Spotify) ----------------
+   Needs three Worker secrets, set once with scripts/spotify-auth.mjs:
+   SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REFRESH_TOKEN.
+   Answers with what's playing now, or else the last track played. */
+const NOW_PLAYING_SECONDS = 30;
+
+async function nowPlaying(request, env, ctx) {
+  if (!env.SPOTIFY_CLIENT_ID || !env.SPOTIFY_CLIENT_SECRET || !env.SPOTIFY_REFRESH_TOKEN) {
+    return json({ error: 'not configured' }, 503, 300);
+  }
+  const cache = caches.default;
+  const cacheKey = new Request(new URL('/api/now-playing', request.url));
+  const hit = await cache.match(cacheKey);
+  if (hit) return hit;
+
+  let track = null;
+  try {
+    const token = await spotifyToken(env, request, ctx);
+    const auth = { headers: { Authorization: 'Bearer ' + token } };
+
+    // 204 means nothing is playing; podcasts come back without a track
+    const now = await fetch('https://api.spotify.com/v1/me/player/currently-playing', auth);
+    if (now.status === 200) {
+      const d = await now.json();
+      if (d.is_playing && d.item && d.currently_playing_type === 'track') track = describeTrack(d.item, true, null);
+    }
+    if (!track) {
+      const recent = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=1', auth);
+      if (recent.ok) {
+        const item = ((await recent.json()).items || [])[0];
+        if (item) track = describeTrack(item.track, false, item.played_at);
+      }
+    }
+  } catch (e) { /* fall through to 502 */ }
+
+  if (!track) return json({ error: 'unavailable' }, 502, 60);
+  const response = json(track, 200, NOW_PLAYING_SECONDS);
+  ctx.waitUntil(cache.put(cacheKey, response.clone()));
+  return response;
+}
+
+// Access tokens last an hour; keep one in the cache instead of asking every time.
+async function spotifyToken(env, request, ctx) {
+  const cache = caches.default;
+  const cacheKey = new Request(new URL('/api/_spotify-token', request.url));
+  const hit = await cache.match(cacheKey);
+  if (hit) return hit.text();
+
+  const res = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: 'Basic ' + btoa(env.SPOTIFY_CLIENT_ID + ':' + env.SPOTIFY_CLIENT_SECRET)
+    },
+    body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: env.SPOTIFY_REFRESH_TOKEN })
+  });
+  if (!res.ok) throw new Error('token ' + res.status);
+  const d = await res.json();
+  const ttl = Math.max(60, (d.expires_in || 3600) - 300);
+  // the cache is only reachable from this Worker; no route serves this key
+  ctx.waitUntil(cache.put(cacheKey, new Response(d.access_token, { headers: { 'Cache-Control': 'max-age=' + ttl } })));
+  return d.access_token;
+}
+
+function describeTrack(t, playing, playedAt) {
+  // album art comes largest first; 300px is plenty for a 56px tile
+  const images = (t.album && t.album.images) || [];
+  const art = images.find((i) => i.width && i.width <= 300) || images[images.length - 1];
+  return {
+    playing,
+    title: t.name,
+    artist: (t.artists || []).map((a) => a.name).join(', '),
+    album: t.album ? t.album.name : '',
+    art: art ? art.url : '',
+    url: t.external_urls ? t.external_urls.spotify : '',
+    playedAt
   };
 }
 

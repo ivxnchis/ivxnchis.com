@@ -530,8 +530,57 @@
       });
   }
 
+  /* Now playing: Ivan's Spotify, or the last song he played. The Worker
+     holds the Spotify login and caches the answer for 30 seconds. */
+  var song = {
+    widget: document.getElementById('songWidget'),
+    heading: document.getElementById('songHeading'),
+    art: document.getElementById('songArt'),
+    title: document.getElementById('songTitle'),
+    artist: document.getElementById('songArtist'),
+    when: document.getElementById('songWhen'),
+    eq: document.getElementById('songEq'),
+    fetchedAt: 0
+  };
+
+  function describeAgo(iso){
+    var seconds = (new Date(iso) - Date.now()) / 1000;
+    if(isNaN(seconds)) return '';
+    var units = [['day', 86400], ['hour', 3600], ['minute', 60]];
+    for(var i = 0; i < units.length; i++){
+      if(Math.abs(seconds) >= units[i][1]){
+        return new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(Math.round(seconds / units[i][1]), units[i][0]);
+      }
+    }
+    return 'just now';
+  }
+
+  function loadSong(){
+    if(Date.now() - song.fetchedAt < 30 * 1000 || !window.fetch) return;
+    song.fetchedAt = Date.now();
+    fetch('/api/now-playing')
+      .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(d){
+        song.widget.href = d.url || song.widget.href;
+        song.art.style.backgroundImage = d.art ? 'url("' + encodeURI(d.art) + '")' : '';
+        song.title.textContent = d.title;
+        song.artist.textContent = d.artist;
+        song.heading.textContent = d.playing ? 'Now playing' : 'Last played';
+        song.when.textContent = d.playing ? 'On Spotify' : describeAgo(d.playedAt) + ' · Spotify';
+        song.widget.classList.toggle('is-playing', d.playing);
+        song.eq.toggleAttribute('hidden', !d.playing);
+        song.widget.setAttribute('aria-label',
+          (d.playing ? 'Now playing: ' : 'Last played: ') + d.title + ' by ' + d.artist + '. Opens Spotify.');
+        song.widget.hidden = false;
+      })
+      .catch(function(){
+        song.widget.hidden = true;
+      });
+  }
+
   function openNotif(){
     loadWeather();
+    loadSong();
     loadFilm();
     syncAppearance();
     openLayer('notif', document.getElementById('ncClose'));

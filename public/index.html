@@ -718,6 +718,55 @@
   .nc-weather .cond{ color: var(--ink); font-size: 0.86rem; text-align: right; }
   .nc-weather .range{ color: var(--ink-soft); font-size: 0.8rem; text-align: right; }
   .nc-weather .loc{ color: var(--ink-soft); font-size: 0.76rem; }
+  /* Now playing: Spotify, via /api/now-playing */
+  .nc-song{
+    display:block;
+    color:inherit;
+    text-decoration:none;
+    --sp-green:#0f7a35;
+  }
+  :root[data-theme="dark"] .nc-song{ --sp-green:#1ed760; }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .nc-song{ --sp-green:#1ed760; }
+  }
+  .nc-song:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .nc-song.is-playing h3{ color:var(--sp-green); }
+  .nc-song-row{ display:flex; gap:0.85rem; align-items:center; }
+  .nc-song-art{
+    flex-shrink:0;
+    width:56px; height:56px;
+    border-radius:8px;
+    background:var(--hover) center / cover no-repeat;
+    box-shadow: 0 6px 14px -4px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.12);
+    transition: transform 0.25s cubic-bezier(0.22,1,0.36,1);
+  }
+  .nc-song:hover .nc-song-art{ transform: scale(1.05); }
+  .nc-song-info{ flex:1; min-width:0; }
+  .nc-widget .nc-song-title,
+  .nc-widget .nc-song-artist{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .nc-widget .nc-song-title{ font-weight:650; line-height:1.3; }
+  .nc-widget .nc-song-artist{ color:var(--ink-soft); font-size:0.84rem; line-height:1.35; }
+  .nc-song-info .nc-time{ margin-top:0.15rem; }
+  /* three bars that bounce while the song is actually playing */
+  .nc-song-eq{ flex-shrink:0; display:flex; align-items:flex-end; gap:2px; width:14px; height:14px; }
+  .nc-song-eq[hidden]{ display:none; }
+  .nc-song-eq i{
+    flex:1;
+    height:100%;
+    border-radius:1px;
+    background:var(--sp-green);
+    transform-origin:50% 100%;
+    animation: nc-eq 0.9s ease-in-out infinite alternate;
+  }
+  .nc-song-eq i:nth-child(2){ animation-duration:0.7s; animation-delay:-0.3s; }
+  .nc-song-eq i:nth-child(3){ animation-duration:1.1s; animation-delay:-0.6s; }
+  @keyframes nc-eq{ from{ transform:scaleY(0.25); } to{ transform:scaleY(1); } }
+  @media (prefers-reduced-motion: reduce){
+    .nc-song-eq i{ animation:none; }
+    .nc-song-eq i:nth-child(1){ transform:scaleY(0.6); }
+    .nc-song-eq i:nth-child(3){ transform:scaleY(0.4); }
+  }
+
   /* Last watched: newest Letterboxd diary entry, via /api/last-watched */
   .nc-film{
     display:block;
@@ -1181,6 +1230,18 @@
         </div>
       </div>
     </div>
+    <a class="nc-widget glass strong nc-song" id="songWidget" href="https://open.spotify.com/user/ivansolanoc" target="_blank" rel="noopener" hidden>
+      <h3 id="songHeading">Now playing</h3>
+      <div class="nc-song-row">
+        <span class="nc-song-art" id="songArt" aria-hidden="true"></span>
+        <div class="nc-song-info">
+          <p class="nc-song-title" id="songTitle"></p>
+          <p class="nc-song-artist" id="songArtist"></p>
+          <div class="nc-time" id="songWhen"></div>
+        </div>
+        <span class="nc-song-eq" id="songEq" aria-hidden="true" hidden><i></i><i></i><i></i></span>
+      </div>
+    </a>
     <a class="nc-widget glass strong nc-film" id="filmWidget" href="https://letterboxd.com/IVXNCHIS" target="_blank" rel="noopener" hidden>
       <h3>Last watched</h3>
       <div class="nc-film-row">
