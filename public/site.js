@@ -133,6 +133,83 @@
     ivx.copy(value, what + ' copied: ' + value, what + ': ' + value);
   });
 
+  /* ---------------- Dock stack (phones) ---------------- */
+  // Dock items marked data-overflow fold into a "More" folder on phones;
+  // the CSS only hides them once this has built the stack.
+  var dockEl = document.querySelector('.dock');
+  var overflow = dockEl ? Array.prototype.slice.call(dockEl.querySelectorAll('[data-overflow]')) : [];
+  if(overflow.length){
+    var stackBtn = document.createElement('button');
+    stackBtn.type = 'button';
+    stackBtn.className = 'dock-item dock-stack';
+    stackBtn.setAttribute('aria-label', 'More apps');
+    stackBtn.setAttribute('aria-expanded', 'false');
+    stackBtn.setAttribute('aria-controls', 'dockStack');
+
+    var panel = document.createElement('div');
+    panel.id = 'dockStack';
+    panel.className = 'dock-stack-panel glass strong';
+    panel.setAttribute('role', 'group');
+    panel.setAttribute('aria-label', 'More apps');
+    panel.hidden = true;
+
+    overflow.forEach(function(src){
+      var tileClass = src.className.replace(/\bdock-item\b/, '').trim();
+      // the folder tile previews up to four of the apps inside
+      if(stackBtn.children.length < 4){
+        var dot = document.createElement('span');
+        dot.className = tileClass.replace(/\btile\b/, '').trim();
+        stackBtn.appendChild(dot);
+      }
+      var item = document.createElement(src.tagName === 'A' ? 'a' : 'button');
+      ['href', 'target', 'rel', 'data-copy', 'data-copy-label', 'aria-label'].forEach(function(attr){
+        if(src.hasAttribute(attr)) item.setAttribute(attr, src.getAttribute(attr));
+      });
+      if(item.tagName === 'BUTTON') item.type = 'button';
+      item.className = 'dock-stack-item';
+      var tile = document.createElement('span');
+      tile.className = tileClass;
+      tile.setAttribute('aria-hidden', 'true');
+      tile.appendChild(src.querySelector('svg').cloneNode(true));
+      var label = document.createElement('span');
+      label.textContent = (src.getAttribute('data-label') || '').split(' · ')[0];
+      item.appendChild(tile);
+      item.appendChild(label);
+      panel.appendChild(item);
+    });
+
+    overflow[overflow.length - 1].insertAdjacentElement('afterend', stackBtn);
+    dockEl.parentNode.appendChild(panel);
+    dockEl.classList.add('has-stack');
+
+    var setStack = function(open){
+      panel.hidden = !open;
+      stackBtn.setAttribute('aria-expanded', String(open));
+      if(open){
+        var w = dockEl.parentNode.getBoundingClientRect();
+        var b = stackBtn.getBoundingClientRect();
+        var half = panel.offsetWidth / 2 + 8;
+        var x = Math.max(half, Math.min(w.width - half, b.left + b.width / 2 - w.left));
+        panel.style.setProperty('--stack-x', x + 'px');
+      }
+    };
+    stackBtn.addEventListener('click', function(){
+      var open = panel.hidden;
+      setStack(open);
+      if(open) panel.querySelector('.dock-stack-item').focus({ preventScroll: true });
+    });
+    // picking an app, tapping elsewhere, or Esc folds the stack back up
+    panel.addEventListener('click', function(e){
+      if(e.target.closest('.dock-stack-item')) setStack(false);
+    });
+    document.addEventListener('click', function(e){
+      if(!panel.hidden && !panel.contains(e.target) && !stackBtn.contains(e.target)) setStack(false);
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && !panel.hidden){ setStack(false); stackBtn.focus(); }
+    });
+  }
+
   /* ---------------- Genie transition to/from the Dock ---------------- */
   var pieceSelector = document.body.getAttribute('data-genie') || 'main .window, .hero';
   function pieces(){ return Array.prototype.slice.call(document.querySelectorAll(pieceSelector)); }
