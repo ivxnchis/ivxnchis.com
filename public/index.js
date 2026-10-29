@@ -483,8 +483,56 @@
     syncAppearance();
   });
 
+  /* Last watched: the newest film in Ivan's Letterboxd diary. The Worker
+     reads the RSS feed (no CORS there) and caches it for 30 min. */
+  var film = {
+    widget: document.getElementById('filmWidget'),
+    poster: document.getElementById('filmPoster'),
+    title: document.getElementById('filmTitle'),
+    year: document.getElementById('filmYear'),
+    stars: document.getElementById('filmStars'),
+    like: document.getElementById('filmLike'),
+    review: document.getElementById('filmReview'),
+    when: document.getElementById('filmWhen'),
+    fetchedAt: 0
+  };
+
+  function describeStars(rating){
+    if(rating == null) return '';
+    return '★★★★★'.slice(0, Math.floor(rating)) + (rating % 1 ? '½' : '');
+  }
+
+  function loadFilm(){
+    if(Date.now() - film.fetchedAt < 30 * 60 * 1000 || !window.fetch) return;
+    film.fetchedAt = Date.now();
+    fetch('/api/last-watched')
+      .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(d){
+        film.widget.href = d.url || film.widget.href;
+        film.poster.style.backgroundImage = d.poster ? 'url("' + encodeURI(d.poster) + '")' : '';
+        film.title.textContent = d.title;
+        film.year.textContent = d.year;
+        film.stars.textContent = describeStars(d.rating);
+        film.like.toggleAttribute('hidden', !d.liked); // .hidden isn't a property on SVG
+        film.review.textContent = d.review ? '“' + d.review + '”' : '';
+        var date = new Date(d.watched + 'T12:00:00');
+        var day = isNaN(date) ? '' : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        film.when.textContent = (d.rewatch ? 'Rewatched ' : 'Watched ') + day + ' · Letterboxd';
+        film.widget.setAttribute('aria-label',
+          'Last watched: ' + d.title + ' (' + d.year + ')' +
+          (d.rating != null ? ', rated ' + d.rating + ' out of 5' : '') +
+          (d.liked ? ', liked' : '') + '. Opens Letterboxd.');
+        film.widget.hidden = false;
+      })
+      .catch(function(){
+        film.widget.hidden = true;
+        film.fetchedAt = 0;
+      });
+  }
+
   function openNotif(){
     loadWeather();
+    loadFilm();
     syncAppearance();
     openLayer('notif', document.getElementById('ncClose'));
   }
