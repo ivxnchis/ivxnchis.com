@@ -1,9 +1,13 @@
 {
   "name": "ivxnchis",
   "compatibility_date": "2026-07-19",
+  // Only /api/* runs the Worker; every other request is a static file.
+  "main": "./src/worker.js",
   "assets": {
     // Only public/ is served, so repo files like this config stay private.
     "directory": "./public",
-    "not_found_handling": "404-page"
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
   }
 }

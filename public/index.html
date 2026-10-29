@@ -718,6 +718,52 @@
   .nc-weather .cond{ color: var(--ink); font-size: 0.86rem; text-align: right; }
   .nc-weather .range{ color: var(--ink-soft); font-size: 0.8rem; text-align: right; }
   .nc-weather .loc{ color: var(--ink-soft); font-size: 0.76rem; }
+  /* Last watched: newest Letterboxd diary entry, via /api/last-watched */
+  .nc-film{
+    display:block;
+    color:inherit;
+    text-decoration:none;
+    --lb-green:#00a33c;
+    --lb-orange:#e86f00;
+  }
+  :root[data-theme="dark"] .nc-film{ --lb-green:#00e054; --lb-orange:#ff8000; }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .nc-film{ --lb-green:#00e054; --lb-orange:#ff8000; }
+  }
+  .nc-film:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .nc-film-row{ display:flex; gap:0.85rem; align-items:flex-start; }
+  .nc-film-poster{
+    flex-shrink:0;
+    width:56px; height:84px;
+    border-radius:5px;
+    background:var(--hover) center / cover no-repeat;
+    box-shadow: 0 6px 14px -4px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.12);
+    transition: transform 0.25s cubic-bezier(0.22,1,0.36,1);
+  }
+  .nc-film:hover .nc-film-poster{ transform: rotate(-2deg) scale(1.04); }
+  .nc-film-info{ min-width:0; }
+  .nc-widget .nc-film-title{ font-weight:650; line-height:1.3; }
+  .nc-film-year{ color:var(--ink-soft); font-weight:400; }
+  .nc-widget .nc-film-rating{
+    display:flex; align-items:center; gap:0.35rem;
+    margin-top:0.15rem;
+    color:var(--lb-green);
+    font-size:0.92rem;
+    letter-spacing:0.04em;
+    line-height:1.2;
+  }
+  .nc-film-like{ width:13px; height:13px; fill:var(--lb-orange); }
+  .nc-film-like[hidden]{ display:none; }
+  .nc-widget .nc-film-review{
+    margin-top:0.35rem;
+    font-size:0.84rem;
+    line-height:1.4;
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    overflow:hidden;
+  }
+  .nc-widget .nc-film-review:empty{ display:none; }
   .nc-actions{ display:flex; gap:0.4rem; flex-wrap:wrap; }
   .nc-actions .glass-btn{ color: var(--accent); }
 
@@ -1135,6 +1181,18 @@
         </div>
       </div>
     </div>
+    <a class="nc-widget glass strong nc-film" id="filmWidget" href="https://letterboxd.com/IVXNCHIS" target="_blank" rel="noopener" hidden>
+      <h3>Last watched</h3>
+      <div class="nc-film-row">
+        <span class="nc-film-poster" id="filmPoster" aria-hidden="true"></span>
+        <div class="nc-film-info">
+          <p class="nc-film-title"><span id="filmTitle"></span> <span class="nc-film-year" id="filmYear"></span></p>
+          <p class="nc-film-rating"><span class="nc-film-stars" id="filmStars"></span><svg class="nc-film-like" id="filmLike" viewBox="0 0 16 16" aria-hidden="true" hidden><path d="M8 14.2 6.9 13.2C3 9.7.5 7.4.5 4.7.5 2.5 2.2.8 4.4.8c1.3 0 2.5.6 3.3 1.5h.6C9.1 1.4 10.3.8 11.6.8c2.2 0 3.9 1.7 3.9 3.9 0 2.7-2.5 5-6.4 8.5Z"/></svg></p>
+          <p class="nc-film-review" id="filmReview"></p>
+          <div class="nc-time" id="filmWhen"></div>
+        </div>
+      </div>
+    </a>
     <div class="nc-widget glass strong">
       <h3>Now</h3>
       <p>🟢 Open to opportunities</p>
