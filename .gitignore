@@ -1,2 +1,4 @@
 # local Cloudflare dev server cache
 .wrangler/
+# local Worker secrets (scripts/spotify-auth.mjs --dev-vars)
+.dev.vars
